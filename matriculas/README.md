@@ -67,7 +67,7 @@ Abre tu navegador en: http://localhost:5000
 
 ---
 
-## Para los compañeros — Integrar tu módulo
+## Para los compañeros
 
 1. Crea tu carpeta: `app/tu_modulo/`
 2. Agrega `__init__.py` con tu Blueprint
