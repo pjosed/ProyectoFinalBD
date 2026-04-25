@@ -1,0 +1,30 @@
+{% extends "shared/base.html" %}
+{% block titulo %}Menú Principal{% endblock %}
+
+{% block contenido %}
+<div class="mb-4">
+    <h4 class="fw-bold"><i class="bi-grid me-2 text-primary"></i>Panel Principal</h4>
+    <p class="text-muted">Selecciona una opción del menú lateral para continuar.</p>
+</div>
+
+<div class="row g-3">
+    {% for seccion in secciones %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">
+                <i class="{{ seccion.icono }} me-2 text-primary"></i>{{ seccion.seccion }}
+            </div>
+            <div class="list-group list-group-flush">
+                {% for item in seccion.opciones %}
+                <a href="{{ url_for(item.url) }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center gap-2">
+                    <i class="{{ item.icono }} text-secondary"></i>
+                    {{ item.label }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

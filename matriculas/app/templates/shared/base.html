@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Sistema de Matrículas{% endblock %}</title>
+    <!-- Bootstrap 5 + Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
+        .sidebar { min-height: calc(100vh - 56px); background: #212529; }
+        .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin: 2px 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: #0d6efd; }
+        .sidebar .seccion-titulo { color: #6c757d; font-size: 0.7rem; text-transform: uppercase;
+                                   letter-spacing: 1px; padding: 12px 16px 4px; }
+        .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+        .badge-rol { font-size: 0.75rem; }
+    </style>
+    {% block estilos_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR SUPERIOR -->
+<nav class="navbar navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="{{ url_for('admin.menu') }}">
+        <i class="bi-university me-2"></i>Matrículas UniCaribe
+    </a>
+    {% if session.get('usuario_id') %}
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-light small">
+            <i class="bi-person-circle me-1"></i>{{ session.nombre }}
+            <span class="badge bg-primary badge-rol ms-1">{{ session.rol }}</span>
+        </span>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light">
+            <i class="bi-box-arrow-right"></i> Salir
+        </a>
+    </div>
+    {% endif %}
+</nav>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR (solo si hay sesión) -->
+        {% if session.get('usuario_id') %}
+        <div class="col-auto sidebar p-0" style="width:220px;">
+            <nav class="nav flex-column pt-2">
+                {% for seccion in secciones | default([]) %}
+                    <div class="seccion-titulo">{{ seccion.seccion }}</div>
+                    {% for item in seccion.opciones %}
+                    <a href="{{ url_for(item.url) }}"
+                       class="nav-link {% if request.endpoint == item.url %}active{% endif %}">
+                        <i class="{{ item.icono }} me-2"></i>{{ item.label }}
+                    </a>
+                    {% endfor %}
+                {% endfor %}
+            </nav>
+        </div>
+        {% endif %}
+
+        <!-- ÁREA DE CONTENIDO -->
+        <div class="col p-4">
+            <!-- Mensajes Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for categoria, mensaje in messages %}
+                <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
+                    {{ mensaje }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            {% block contenido %}{% endblock %}
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts_extra %}{% endblock %}
+</body>
+</html>
