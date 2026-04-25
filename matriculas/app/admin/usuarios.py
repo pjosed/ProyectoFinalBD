@@ -1,6 +1,6 @@
 """
 app/admin/usuarios.py
-CRUD de usuarios: listar, crear, activar/desactivar, reenviar contraseña.
+CRUD de usuarios adaptado al modelo de Alan.
 """
 
 import secrets
@@ -12,11 +12,7 @@ from app.admin import admin_bp
 from app.auth.routes import login_requerido, rol_requerido
 from config.database import ejecutar_consulta, ejecutar_uno
 from app import mail
-from app.admin import admin_bp
 
-# ─────────────────────────────────────────────────────────────────────────────
-# UTILIDADES
-# ─────────────────────────────────────────────────────────────────────────────
 
 def _generar_contrasena(largo=10):
     caracteres = string.ascii_letters + string.digits + "!@#$"
@@ -39,7 +35,6 @@ def _enviar_contrasena(correo, nombre, nombre_usuario, contrasena):
             f"Tu cuenta ha sido creada en el Sistema de Matrículas UniCaribe.\n\n"
             f"  Usuario:     {nombre_usuario}\n"
             f"  Contraseña:  {contrasena}\n\n"
-            f"Al ingresar por primera vez deberás cambiar tu contraseña.\n\n"
             f"Sistema de Matrículas — UniCaribe"
         )
         mail.send(msg)
@@ -48,19 +43,15 @@ def _enviar_contrasena(correo, nombre, nombre_usuario, contrasena):
         return False
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LISTAR USUARIOS
-# ─────────────────────────────────────────────────────────────────────────────
-
 @admin_bp.route("/usuarios")
 @rol_requerido("ADMINISTRADOR")
 def usuarios_lista():
     usuarios = ejecutar_consulta(
         """
-        SELECT u.id_usuario, u.nombre_usuario, u.activo,
-               u.fecha_creacion, u.ultimo_acceso, u.debe_cambiar_clave,
-               r.nombre_rol,
-               p.nombre, p.apellido, p.correo
+        SELECT u.id_usuario, u.username AS nombre_usuario, u.activo,
+               u.fecha_creacion,
+               r.nombre AS nombre_rol,
+               p.nombres AS nombre, p.apellidos AS apellido, p.email AS correo
         FROM   usuario u
         JOIN   rol     r ON u.id_rol     = r.id_rol
         JOIN   persona p ON u.id_persona = p.id_persona
@@ -71,26 +62,22 @@ def usuarios_lista():
     return render_template("admin/usuarios_lista.html", usuarios=usuarios)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CREAR USUARIO
-# ─────────────────────────────────────────────────────────────────────────────
-
 @admin_bp.route("/usuarios/nuevo", methods=["GET", "POST"])
 @rol_requerido("ADMINISTRADOR")
 def usuario_nuevo():
     roles = ejecutar_consulta(
-        "SELECT id_rol, nombre_rol FROM rol ORDER BY nombre_rol",
+        "SELECT id_rol, nombre FROM rol ORDER BY nombre",
         fetch=True
     )
 
     personas_sin_usuario = ejecutar_consulta(
         """
-        SELECT p.id_persona, p.nombre, p.apellido, p.correo
+        SELECT p.id_persona, p.nombres AS nombre, p.apellidos AS apellido, p.email AS correo
         FROM   persona p
         LEFT JOIN usuario u ON u.id_persona = p.id_persona
         WHERE  u.id_usuario IS NULL
           AND  p.activo = 1
-        ORDER  BY p.apellido, p.nombre
+        ORDER  BY p.apellidos, p.nombres
         """,
         fetch=True,
     )
@@ -107,18 +94,19 @@ def usuario_nuevo():
             id_persona = int(id_persona)
 
         elif accion == "nueva":
-            nombre   = request.form.get("nombre", "").strip()
-            apellido = request.form.get("apellido", "").strip()
-            correo   = request.form.get("correo", "").strip().lower()
-            telefono = request.form.get("telefono", "").strip()
+            nombres   = request.form.get("nombre", "").strip()
+            apellidos = request.form.get("apellido", "").strip()
+            correo    = request.form.get("correo", "").strip().lower()
+            telefono  = request.form.get("telefono", "").strip()
+            num_doc   = request.form.get("num_doc", "").strip()
 
-            if not nombre or not apellido or not correo:
-                flash("Nombre, apellido y correo son obligatorios.", "warning")
+            if not nombres or not apellidos or not correo or not num_doc:
+                flash("Nombre, apellido, correo y número de documento son obligatorios.", "warning")
                 return render_template("admin/usuario_form.html",
-                                       roles=roles, personas=personas_sin_usuario)
+                                    roles=roles, personas=personas_sin_usuario)
 
             existente = ejecutar_uno(
-                "SELECT id_persona FROM persona WHERE correo = %s", (correo,)
+                "SELECT id_persona FROM persona WHERE email = %s", (correo,)
             )
             if existente:
                 flash("Ya existe una persona con ese correo.", "danger")
@@ -126,9 +114,9 @@ def usuario_nuevo():
                                        roles=roles, personas=personas_sin_usuario)
 
             id_persona = ejecutar_consulta(
-                "INSERT INTO persona (nombre, apellido, correo, telefono) VALUES (%s,%s,%s,%s)",
-                (nombre, apellido, correo, telefono or None),
-            )
+            "INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES (%s,%s,%s,%s,%s,%s)",
+            ('CC', num_doc, nombres, apellidos, correo, telefono or None),
+        )
         else:
             flash("Acción no válida.", "danger")
             return render_template("admin/usuario_form.html",
@@ -143,7 +131,7 @@ def usuario_nuevo():
                                    roles=roles, personas=personas_sin_usuario)
 
         if ejecutar_uno(
-            "SELECT id_usuario FROM usuario WHERE nombre_usuario = %s", (nombre_usuario,)
+            "SELECT id_usuario FROM usuario WHERE username = %s", (nombre_usuario,)
         ):
             flash(f"El nombre de usuario '{nombre_usuario}' ya está en uso.", "danger")
             return render_template("admin/usuario_form.html",
@@ -154,24 +142,24 @@ def usuario_nuevo():
 
         ejecutar_consulta(
             """INSERT INTO usuario
-               (id_persona, id_rol, nombre_usuario, contrasena_hash, debe_cambiar_clave)
-               VALUES (%s, %s, %s, %s, 1)""",
+               (id_persona, id_rol, username, password_hash)
+               VALUES (%s, %s, %s, %s)""",
             (id_persona, int(id_rol), nombre_usuario, hash_pwd),
         )
 
         persona = ejecutar_uno(
-            "SELECT nombre, correo FROM persona WHERE id_persona = %s", (id_persona,)
+            "SELECT nombres, email FROM persona WHERE id_persona = %s", (id_persona,)
         )
         correo_ok = _enviar_contrasena(
-            persona["correo"], persona["nombre"], nombre_usuario, contrasena
+            persona["email"], persona["nombres"], nombre_usuario, contrasena
         )
 
         if correo_ok:
-            flash(f"Usuario '{nombre_usuario}' creado y contraseña enviada a {persona['correo']}.", "success")
+            flash(f"Usuario '{nombre_usuario}' creado y contraseña enviada a {persona['email']}.", "success")
         else:
             flash(
                 f"Usuario '{nombre_usuario}' creado. "
-                f"No se pudo enviar el correo — contraseña temporal: {contrasena}",
+                f"Contraseña temporal: {contrasena}",
                 "warning",
             )
 
@@ -181,10 +169,6 @@ def usuario_nuevo():
                            roles=roles, personas=personas_sin_usuario)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ACTIVAR / DESACTIVAR
-# ─────────────────────────────────────────────────────────────────────────────
-
 @admin_bp.route("/usuarios/<int:id_usuario>/toggle", methods=["POST"])
 @rol_requerido("ADMINISTRADOR")
 def usuario_toggle(id_usuario):
@@ -193,7 +177,7 @@ def usuario_toggle(id_usuario):
         return redirect(url_for("admin.usuarios_lista"))
 
     usuario = ejecutar_uno(
-        "SELECT activo, nombre_usuario FROM usuario WHERE id_usuario = %s", (id_usuario,)
+        "SELECT activo, username FROM usuario WHERE id_usuario = %s", (id_usuario,)
     )
     if not usuario:
         flash("Usuario no encontrado.", "danger")
@@ -205,20 +189,16 @@ def usuario_toggle(id_usuario):
         (nuevo_estado, id_usuario),
     )
     estado_texto = "activado" if nuevo_estado else "desactivado"
-    flash(f"Usuario '{usuario['nombre_usuario']}' {estado_texto}.", "success")
+    flash(f"Usuario '{usuario['username']}' {estado_texto}.", "success")
     return redirect(url_for("admin.usuarios_lista"))
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# REENVIAR CONTRASEÑA
-# ─────────────────────────────────────────────────────────────────────────────
 
 @admin_bp.route("/usuarios/<int:id_usuario>/reenviar-clave", methods=["POST"])
 @rol_requerido("ADMINISTRADOR")
 def usuario_reenviar_clave(id_usuario):
     datos = ejecutar_uno(
         """
-        SELECT u.nombre_usuario, p.nombre, p.correo
+        SELECT u.username, p.nombres, p.email
         FROM   usuario u
         JOIN   persona p ON u.id_persona = p.id_persona
         WHERE  u.id_usuario = %s
@@ -233,16 +213,16 @@ def usuario_reenviar_clave(id_usuario):
     hash_pwd   = generate_password_hash(contrasena)
 
     ejecutar_consulta(
-        "UPDATE usuario SET contrasena_hash = %s, debe_cambiar_clave = 1 WHERE id_usuario = %s",
+        "UPDATE usuario SET password_hash = %s WHERE id_usuario = %s",
         (hash_pwd, id_usuario),
     )
 
     correo_ok = _enviar_contrasena(
-        datos["correo"], datos["nombre"], datos["nombre_usuario"], contrasena
+        datos["email"], datos["nombres"], datos["username"], contrasena
     )
 
     if correo_ok:
-        flash(f"Nueva contraseña enviada a {datos['correo']}.", "success")
+        flash(f"Nueva contraseña enviada a {datos['email']}.", "success")
     else:
         flash(f"No se pudo enviar el correo. Contraseña temporal: {contrasena}", "warning")
 

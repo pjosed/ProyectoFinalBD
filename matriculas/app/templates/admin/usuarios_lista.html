@@ -18,7 +18,6 @@
                     <th>Nombre completo</th>
                     <th>Correo</th>
                     <th>Rol</th>
-                    <th>Último acceso</th>
                     <th>Estado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -41,9 +40,6 @@
                     <span class="badge bg-{{ colores.get(u.nombre_rol, 'secondary') }}">
                         {{ u.nombre_rol }}
                     </span>
-                </td>
-                <td class="small text-muted">
-                    {{ u.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if u.ultimo_acceso else 'Nunca' }}
                 </td>
                 <td>
                     {% if u.activo %}

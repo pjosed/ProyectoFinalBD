@@ -29,6 +29,7 @@
 
             <input type="hidden" name="accion" id="accion" value="existente">
 
+            <!-- Panel: persona existente -->
             <div id="panel-existente">
                 <div class="mb-3">
                     <label class="form-label">Persona</label>
@@ -48,6 +49,7 @@
                 </div>
             </div>
 
+            <!-- Panel: nueva persona -->
             <div id="panel-nueva" style="display:none;">
                 <div class="row g-3 mb-3">
                     <div class="col-6">
@@ -58,9 +60,23 @@
                         <label class="form-label">Apellido</label>
                         <input type="text" name="apellido" class="form-control" placeholder="Apellido">
                     </div>
+                    <div class="col-4">
+                        <label class="form-label">Tipo de documento</label>
+                        <select name="tipo_doc" class="form-select">
+                            <option value="CC">CC</option>
+                            <option value="CE">CE</option>
+                            <option value="PASAPORTE">Pasaporte</option>
+                        </select>
+                    </div>
+                    <div class="col-8">
+                        <label class="form-label">Número de documento</label>
+                        <input type="text" name="num_doc" class="form-control"
+                               placeholder="Número de documento">
+                    </div>
                     <div class="col-8">
                         <label class="form-label">Correo electrónico</label>
-                        <input type="email" name="correo" class="form-control" placeholder="correo@ejemplo.com">
+                        <input type="email" name="correo" class="form-control"
+                               placeholder="correo@ejemplo.com">
                     </div>
                     <div class="col-4">
                         <label class="form-label">Teléfono</label>
@@ -71,6 +87,7 @@
 
             <hr class="my-4">
 
+            <!-- PASO 2: Datos del usuario -->
             <h6 class="fw-semibold text-primary mb-3">2. Datos de acceso</h6>
             <div class="row g-3">
                 <div class="col-6">
@@ -86,7 +103,7 @@
                     <select name="id_rol" class="form-select" required>
                         <option value="">— Selecciona rol —</option>
                         {% for r in roles %}
-                        <option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>
+                        <option value="{{ r.id_rol }}">{{ r.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
