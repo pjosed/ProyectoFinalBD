@@ -3,7 +3,7 @@ generar_admin.py
 Genera el hash real de la contraseña del ADMINISTRADOR
 y muestra el INSERT SQL listo para pegar en Workbench.
 
-Ejecutar UNA sola vez:
+Ejecutar UNA sola vez desde la carpeta matriculas/:
     python generar_admin.py
 """
 
@@ -24,19 +24,12 @@ print("─" * 65)
 print(f"""
 USE matriculas_uni;
 
--- 1. Roles
-INSERT IGNORE INTO rol (nombre_rol, descripcion) VALUES
-    ('ADMINISTRADOR', 'Acceso total al sistema. Gestiona usuarios, roles y menús.'),
-    ('SUPERVISOR',    'Gestiona programas, planes de estudio y reglas de cobro.'),
-    ('ASISTENTE',     'Gestiona cobros, pagos y cuenta corriente.');
+-- 1. Persona del administrador
+INSERT IGNORE INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
+    ('CC', '0000000000', 'Administrador', 'Sistema', 'admin@unicaribe.edu.co', '3001234567');
 
--- 2. Persona del administrador
-INSERT IGNORE INTO persona (nombre, apellido, correo, telefono) VALUES
-    ('Administrador', 'Sistema', 'admin@unicaribe.edu.co', '3001234567');
-
--- 3. Usuario administrador (contraseña: {CONTRASENA})
-INSERT IGNORE INTO usuario
-    (id_persona, id_rol, nombre_usuario, contrasena_hash, debe_cambiar_clave)
+-- 2. Usuario administrador (contraseña: {CONTRASENA})
+INSERT IGNORE INTO usuario (id_persona, id_rol, username, password_hash, debe_cambiar_clave)
 SELECT
     p.id_persona,
     r.id_rol,
@@ -44,11 +37,11 @@ SELECT
     '{hash_generado}',
     0
 FROM persona p
-JOIN rol r ON r.nombre_rol = 'ADMINISTRADOR'
-WHERE p.correo = 'admin@unicaribe.edu.co';
+JOIN rol r ON r.nombre = 'ADMINISTRADOR'
+WHERE p.email = 'admin@unicaribe.edu.co';
 
 -- Verificar
-SELECT u.nombre_usuario, r.nombre_rol, p.nombre, p.apellido, u.activo
+SELECT u.username, r.nombre AS rol, p.nombres, p.apellidos, u.activo
 FROM   usuario u
 JOIN   rol     r ON u.id_rol     = r.id_rol
 JOIN   persona p ON u.id_persona = p.id_persona;

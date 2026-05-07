@@ -1,0 +1,141 @@
+{% extends "shared/base.html" %}
+{% block titulo %}Plan de Estudio — {{ programa.nombre }}{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi-journal-text me-2 text-primary"></i>{{ programa.nombre }}
+        </h4>
+        <small class="text-muted">
+            {{ programa.codigo }} &nbsp;·&nbsp; {{ programa.modalidad }}
+            &nbsp;·&nbsp; {{ programa.nivel }}
+            &nbsp;·&nbsp; {{ programa.total_semestres }} semestres
+            &nbsp;·&nbsp; {{ programa.total_creditos }} créditos totales
+        </small>
+    </div>
+    <a href="{{ url_for('configuracion.planes_lista') }}" class="btn btn-outline-secondary">
+        <i class="bi-arrow-left me-1"></i> Volver
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <!-- Tabla del plan actual -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi-list-check me-1 text-primary"></i>
+                Asignaturas en el plan
+                {% if plan %}
+                <span class="badge bg-primary ms-1">{{ plan|length }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width:80px;">Semestre</th>
+                            <th style="width:100px;">Código</th>
+                            <th>Asignatura</th>
+                            <th class="text-center" style="width:80px;">Créditos</th>
+                            <th class="text-center" style="width:70px;">Quitar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% set ns = namespace(semestre_actual=0) %}
+                    {% for item in plan %}
+                        {% if item.semestre != ns.semestre_actual %}
+                            {% set ns.semestre_actual = item.semestre %}
+                            <tr class="table-light">
+                                <td colspan="5" class="fw-semibold small text-muted ps-3">
+                                    Semestre {{ item.semestre }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="text-center text-muted">{{ item.semestre }}</td>
+                            <td><span class="font-monospace small">{{ item.codigo }}</span></td>
+                            <td>{{ item.nombre }}</td>
+                            <td class="text-center">{{ item.creditos }}</td>
+                            <td class="text-center">
+                                <form method="POST"
+                                      action="{{ url_for('configuracion.plan_quitar', id_plan=item.id_plan) }}"
+                                      onsubmit="return confirm('¿Quitar esta asignatura del plan?')">
+                                    <button class="btn btn-sm btn-outline-danger" title="Quitar">
+                                        <i class="bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Este programa aún no tiene asignaturas en el plan.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    {% if plan %}
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="fw-semibold text-end pe-3">Total créditos en plan:</td>
+                            <td class="text-center fw-bold">
+                                {{ plan | sum(attribute='creditos') }}
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para agregar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi-plus-circle me-1 text-success"></i> Agregar asignatura
+            </div>
+            <div class="card-body">
+                {% if disponibles %}
+                <form method="POST"
+                      action="{{ url_for('configuracion.plan_agregar', id_programa=programa.id_programa) }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Asignatura</label>
+                        <select name="id_asignatura" class="form-select" required>
+                            <option value="">— Selecciona —</option>
+                            {% for a in disponibles %}
+                            <option value="{{ a.id_asignatura }}">
+                                {{ a.codigo }} — {{ a.nombre }} ({{ a.creditos }} cr.)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Semestre</label>
+                        <input type="number" name="semestre" class="form-control"
+                               min="1" max="{{ programa.total_semestres }}" required
+                               placeholder="Ej: 3">
+                        <div class="form-text">Entre 1 y {{ programa.total_semestres }}.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi-plus-lg me-1"></i> Agregar al plan
+                    </button>
+                </form>
+                {% else %}
+                <p class="text-muted small mb-0">
+                    Todas las asignaturas activas ya están en el plan de este programa.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

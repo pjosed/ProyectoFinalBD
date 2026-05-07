@@ -21,9 +21,10 @@ MENUS_POR_ROL = {
             "seccion": "Configuración",
             "icono": "bi-gear",
             "opciones": [
-                {"label": "Programas Académicos", "url": "admin.placeholder", "icono": "bi-book"},
-                {"label": "Códigos de Detalle",   "url": "admin.placeholder", "icono": "bi-tags"},
-                {"label": "Reglas de Cobro",      "url": "admin.placeholder", "icono": "bi-cash-coin"},
+                {"label": "Programas Académicos", "url": "configuracion.programas_lista", "icono": "bi-book"},
+                {"label": "Plan de Estudio",      "url": "configuracion.planes_lista",    "icono": "bi-journal-text"},
+                {"label": "Códigos de Detalle",   "url": "configuracion.codigos_lista",   "icono": "bi-tags"},
+                {"label": "Reglas de Cobro",      "url": "configuracion.reglas_lista",    "icono": "bi-cash-coin"},
             ],
         },
         {
@@ -51,10 +52,10 @@ MENUS_POR_ROL = {
             "seccion": "Configuración",
             "icono": "bi-gear",
             "opciones": [
-                {"label": "Programas Académicos", "url": "admin.placeholder", "icono": "bi-book"},
-                {"label": "Plan de Estudio",      "url": "admin.placeholder", "icono": "bi-journal-text"},
-                {"label": "Reglas de Cobro",      "url": "admin.placeholder", "icono": "bi-cash-coin"},
-                {"label": "Códigos de Detalle",   "url": "admin.placeholder", "icono": "bi-tags"},
+                {"label": "Programas Académicos", "url": "configuracion.programas_lista", "icono": "bi-book"},
+                {"label": "Plan de Estudio",      "url": "configuracion.planes_lista",    "icono": "bi-journal-text"},
+                {"label": "Reglas de Cobro",      "url": "configuracion.reglas_lista",    "icono": "bi-cash-coin"},
+                {"label": "Códigos de Detalle",   "url": "configuracion.codigos_lista",   "icono": "bi-tags"},
             ],
         },
         {

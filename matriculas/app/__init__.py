@@ -38,8 +38,7 @@ def create_app():
     from app.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    # Tus compañeros registran sus blueprints aquí:
-    # from app.programas import programas_bp
-    # app.register_blueprint(programas_bp, url_prefix="/programas")
+    from app.configuracion import configuracion_bp
+    app.register_blueprint(configuracion_bp, url_prefix="/configuracion")
 
     return app

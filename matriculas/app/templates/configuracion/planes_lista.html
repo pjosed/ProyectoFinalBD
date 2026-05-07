@@ -1,0 +1,71 @@
+{% extends "shared/base.html" %}
+{% block titulo %}Plan de Estudio{% endblock %}
+
+{% block contenido %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi-journal-text me-2 text-primary"></i>Plan de Estudio por Programa
+    </h4>
+    <p class="text-muted small mt-1 mb-0">
+        Selecciona un programa para ver y editar sus asignaturas por semestre.
+    </p>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Modalidad</th>
+                    <th>Nivel</th>
+                    <th class="text-center">Semestres</th>
+                    <th class="text-center">Asignaturas en plan</th>
+                    <th>Estado</th>
+                    <th class="text-center">Plan</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for p in programas %}
+            <tr class="{% if not p.activo %}table-secondary text-muted{% endif %}">
+                <td><span class="fw-semibold font-monospace">{{ p.codigo }}</span></td>
+                <td>{{ p.nombre }}</td>
+                <td>
+                    {% set m_color = {'PRESENCIAL': 'primary', 'VIRTUAL': 'info', 'MIXTA': 'warning'} %}
+                    <span class="badge bg-{{ m_color.get(p.modalidad, 'secondary') }}">{{ p.modalidad }}</span>
+                </td>
+                <td>
+                    {% set n_color = {'PREGRADO': 'success', 'POSGRADO': 'danger', 'TECNOLOGO': 'secondary', 'TECNICO': 'dark'} %}
+                    <span class="badge bg-{{ n_color.get(p.nivel, 'secondary') }}">{{ p.nivel }}</span>
+                </td>
+                <td class="text-center">{{ p.total_semestres }}</td>
+                <td class="text-center">
+                    <span class="badge bg-{% if p.num_asignaturas > 0 %}primary{% else %}light text-muted border{% endif %}">
+                        {{ p.num_asignaturas }}
+                    </span>
+                </td>
+                <td>
+                    {% if p.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <a href="{{ url_for('configuracion.plan_detalle', id_programa=p.id_programa) }}"
+                       class="btn btn-sm btn-outline-primary" title="Ver/editar plan">
+                        <i class="bi-pencil-square"></i> Ver plan
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">No hay programas registrados.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

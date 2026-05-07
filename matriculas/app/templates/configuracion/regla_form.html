@@ -1,0 +1,120 @@
+{% extends "shared/base.html" %}
+{% block titulo %}{% if regla %}Editar Regla de Cobro{% else %}Nueva Regla de Cobro{% endif %}{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi-cash-coin me-2 text-primary"></i>
+        {% if regla %}Editar Regla de Cobro{% else %}Nueva Regla de Cobro{% endif %}
+    </h4>
+    <a href="{{ url_for('configuracion.reglas_lista') }}" class="btn btn-outline-secondary">
+        <i class="bi-arrow-left me-1"></i> Volver
+    </a>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <div class="card-body">
+        <form method="POST" id="formRegla">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Periodo académico <span class="text-danger">*</span></label>
+                <select name="id_periodo" class="form-select" required>
+                    <option value="">— Selecciona —</option>
+                    {% for per in periodos %}
+                    <option value="{{ per.id_periodo }}"
+                        {% if regla and regla.id_periodo == per.id_periodo %}selected{% endif %}>
+                        {{ per.codigo }} — {{ per.nombre }}
+                        {% if per.activo %} ✓ (activo){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Programa <span class="text-danger">*</span></label>
+                <select name="id_programa" class="form-select" required>
+                    <option value="">— Selecciona —</option>
+                    {% for prog in programas %}
+                    <option value="{{ prog.id_programa }}"
+                        {% if regla and regla.id_programa == prog.id_programa %}selected{% endif %}>
+                        {{ prog.codigo }} — {{ prog.nombre }} ({{ prog.modalidad }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Tipo de cobro <span class="text-danger">*</span></label>
+                <div class="d-flex gap-4 mt-1">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="modalidad_cobro"
+                               id="opGlobal" value="GLOBAL"
+                               {% if not regla or regla.modalidad_cobro == 'GLOBAL' %}checked{% endif %}
+                               onchange="actualizarCampos()">
+                        <label class="form-check-label" for="opGlobal">
+                            <i class="bi-tag me-1"></i> Global (tarifa fija)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="modalidad_cobro"
+                               id="opCreditos" value="POR_CREDITOS"
+                               {% if regla and regla.modalidad_cobro == 'POR_CREDITOS' %}checked{% endif %}
+                               onchange="actualizarCampos()">
+                        <label class="form-check-label" for="opCreditos">
+                            <i class="bi-123 me-1"></i> Por créditos
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campo: valor global -->
+            <div class="mb-3" id="campoGlobal">
+                <label class="form-label fw-semibold">Valor global (COP) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" name="valor_global" class="form-control"
+                           min="0" step="1000"
+                           value="{{ regla.valor_global if regla and regla.valor_global else '' }}"
+                           placeholder="Ej: 4800000">
+                </div>
+            </div>
+
+            <!-- Campo: valor por crédito -->
+            <div class="mb-4" id="campoCredito" style="display:none;">
+                <label class="form-label fw-semibold">Valor por crédito (COP) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" name="valor_por_credito" class="form-control"
+                           min="0" step="500"
+                           value="{{ regla.valor_por_credito if regla and regla.valor_por_credito else '' }}"
+                           placeholder="Ej: 95000">
+                    <span class="input-group-text">/ crédito</span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi-check-lg me-1"></i>
+                    {% if regla %}Guardar cambios{% else %}Crear regla{% endif %}
+                </button>
+                <a href="{{ url_for('configuracion.reglas_lista') }}" class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+function actualizarCampos() {
+    const esPorCreditos = document.getElementById("opCreditos").checked;
+    document.getElementById("campoGlobal").style.display  = esPorCreditos ? "none"  : "block";
+    document.getElementById("campoCredito").style.display = esPorCreditos ? "block" : "none";
+}
+// Estado inicial según la regla existente
+actualizarCampos();
+</script>
+{% endblock %}
