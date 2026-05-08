@@ -18,71 +18,39 @@
                 <tr>
                     <th>Periodo</th>
                     <th>Programa</th>
-                    <th>Modalidad programa</th>
-                    <th>Tipo cobro</th>
-                    <th class="text-end">Valor</th>
-                    <th>Estado</th>
+                    <th class="text-end">Valor global</th>
+                    <th class="text-end">Valor por crédito</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
             {% for r in reglas %}
-            <tr class="{% if not r.activo %}table-secondary text-muted{% endif %}">
-                <td>
-                    <span class="fw-semibold">{{ r.cod_periodo }}</span>
-                    <div class="small text-muted">{{ r.nom_periodo }}</div>
-                </td>
+            <tr>
+                <td>{{ r.nom_periodo }}</td>
                 <td>
                     <span class="fw-semibold">{{ r.nom_programa }}</span>
                     <div class="small font-monospace text-muted">{{ r.cod_programa }}</div>
                 </td>
-                <td>
-                    {% set m_color = {'PRESENCIAL': 'primary', 'VIRTUAL': 'info', 'MIXTA': 'warning'} %}
-                    <span class="badge bg-{{ m_color.get(r.mod_programa, 'secondary') }}">
-                        {{ r.mod_programa }}
-                    </span>
-                </td>
-                <td>
-                    {% if r.modalidad_cobro == 'GLOBAL' %}
-                        <span class="badge bg-success">Global</span>
-                    {% else %}
-                        <span class="badge bg-info text-dark">Por crédito</span>
-                    {% endif %}
-                </td>
-                <td class="text-end fw-semibold">
-                    {% if r.modalidad_cobro == 'GLOBAL' %}
+                <td class="text-end">
+                    {% if r.valor_global %}
                         ${{ "{:,.0f}".format(r.valor_global) }}
-                    {% else %}
-                        ${{ "{:,.0f}".format(r.valor_por_credito) }} / cr.
-                    {% endif %}
+                    {% else %}—{% endif %}
                 </td>
-                <td>
-                    {% if r.activo %}
-                        <span class="badge bg-success">Activa</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Inactiva</span>
-                    {% endif %}
+                <td class="text-end">
+                    {% if r.valor_credito %}
+                        ${{ "{:,.0f}".format(r.valor_credito) }} / cr.
+                    {% else %}—{% endif %}
                 </td>
                 <td class="text-center">
-                    <div class="d-flex gap-1 justify-content-center">
-                        <a href="{{ url_for('configuracion.regla_editar', id_regla=r.id_regla) }}"
-                           class="btn btn-sm btn-outline-primary" title="Editar">
-                            <i class="bi-pencil"></i>
-                        </a>
-                        <form method="POST"
-                              action="{{ url_for('configuracion.regla_toggle', id_regla=r.id_regla) }}"
-                              onsubmit="return confirm('¿Cambiar estado de esta regla?')">
-                            <button class="btn btn-sm {% if r.activo %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
-                                    title="{% if r.activo %}Desactivar{% else %}Activar{% endif %}">
-                                <i class="bi-{% if r.activo %}toggle-on{% else %}toggle-off{% endif %}"></i>
-                            </button>
-                        </form>
-                    </div>
+                    <a href="{{ url_for('configuracion.regla_editar', id_regla=r.id_regla) }}"
+                       class="btn btn-sm btn-outline-primary" title="Editar">
+                        <i class="bi-pencil"></i>
+                    </a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">No hay reglas de cobro registradas.</td>
+                <td colspan="5" class="text-center text-muted py-4">No hay reglas de cobro registradas.</td>
             </tr>
             {% endfor %}
             </tbody>

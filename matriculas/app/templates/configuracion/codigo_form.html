@@ -12,7 +12,7 @@
     </a>
 </div>
 
-<div class="card" style="max-width:560px;">
+<div class="card" style="max-width:500px;">
     <div class="card-body">
         <form method="POST">
 
@@ -27,9 +27,7 @@
                     </option>
                     {% endfor %}
                 </select>
-                <div class="form-text">
-                    COBRO: genera deuda. PAGO: abona o descuenta (códigos DESC* = becas).
-                </div>
+                <div class="form-text">COBRO: genera deuda. PAGO: abona (códigos DESC* = becas).</div>
             </div>
 
             <div class="mb-3">
@@ -37,26 +35,15 @@
                 <input type="text" name="codigo" class="form-control text-uppercase font-monospace"
                        maxlength="20" required
                        value="{{ codigo_obj.codigo if codigo_obj else '' }}"
-                       placeholder="Ej: PAGO_EFE o DESC_BECA">
-                <div class="form-text">
-                    Único y sin espacios. Los descuentos/becas deben empezar con <strong>DESC</strong>.
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
-                <input type="text" name="nombre" class="form-control"
-                       maxlength="150" required
-                       value="{{ codigo_obj.nombre if codigo_obj else '' }}"
-                       placeholder="Ej: Pago en efectivo (caja)">
+                       placeholder="Ej: MATRICULA o DESC_BECA">
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-semibold">Descripción</label>
+                <label class="form-label fw-semibold">Descripción <span class="text-danger">*</span></label>
                 <input type="text" name="descripcion" class="form-control"
-                       maxlength="255"
-                       value="{{ codigo_obj.descripcion if codigo_obj and codigo_obj.descripcion else '' }}"
-                       placeholder="Descripción opcional">
+                       maxlength="255" required
+                       value="{{ codigo_obj.descripcion if codigo_obj else '' }}"
+                       placeholder="Ej: Matrícula ordinaria por periodo académico">
             </div>
 
             <div class="d-flex gap-2">

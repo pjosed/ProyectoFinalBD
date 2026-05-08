@@ -2,17 +2,13 @@
 {% block titulo %}Plan de Estudio — {{ programa.nombre }}{% endblock %}
 
 {% block contenido %}
-<!-- Encabezado -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h4 class="fw-bold mb-0">
             <i class="bi-journal-text me-2 text-primary"></i>{{ programa.nombre }}
         </h4>
         <small class="text-muted">
-            {{ programa.codigo }} &nbsp;·&nbsp; {{ programa.modalidad }}
-            &nbsp;·&nbsp; {{ programa.nivel }}
-            &nbsp;·&nbsp; {{ programa.total_semestres }} semestres
-            &nbsp;·&nbsp; {{ programa.total_creditos }} créditos totales
+            {{ programa.codigo }} &nbsp;·&nbsp; {{ programa.num_sem }} semestres
         </small>
     </div>
     <a href="{{ url_for('configuracion.planes_lista') }}" class="btn btn-outline-secondary">
@@ -22,15 +18,12 @@
 
 <div class="row g-4">
 
-    <!-- Tabla del plan actual -->
+    <!-- Tabla del plan -->
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header bg-white fw-semibold">
-                <i class="bi-list-check me-1 text-primary"></i>
-                Asignaturas en el plan
-                {% if plan %}
-                <span class="badge bg-primary ms-1">{{ plan|length }}</span>
-                {% endif %}
+                <i class="bi-list-check me-1 text-primary"></i>Asignaturas en el plan
+                {% if plan %}<span class="badge bg-primary ms-1">{{ plan|length }}</span>{% endif %}
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover align-middle mb-0">
@@ -63,7 +56,7 @@
                                 <form method="POST"
                                       action="{{ url_for('configuracion.plan_quitar', id_plan=item.id_plan) }}"
                                       onsubmit="return confirm('¿Quitar esta asignatura del plan?')">
-                                    <button class="btn btn-sm btn-outline-danger" title="Quitar">
+                                    <button class="btn btn-sm btn-outline-danger">
                                         <i class="bi-trash3"></i>
                                     </button>
                                 </form>
@@ -80,10 +73,8 @@
                     {% if plan %}
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="3" class="fw-semibold text-end pe-3">Total créditos en plan:</td>
-                            <td class="text-center fw-bold">
-                                {{ plan | sum(attribute='creditos') }}
-                            </td>
+                            <td colspan="3" class="fw-semibold text-end pe-3">Total créditos:</td>
+                            <td class="text-center fw-bold">{{ plan | sum(attribute='creditos') }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -93,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Formulario para agregar -->
+    <!-- Formulario agregar -->
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header bg-white fw-semibold">
@@ -110,7 +101,7 @@
                             <option value="">— Selecciona —</option>
                             {% for a in disponibles %}
                             <option value="{{ a.id_asignatura }}">
-                                {{ a.codigo }} — {{ a.nombre }} ({{ a.creditos }} cr.)
+                                {{ a.codigo }} — {{ a.nombre }}
                             </option>
                             {% endfor %}
                         </select>
@@ -119,9 +110,14 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Semestre</label>
                         <input type="number" name="semestre" class="form-control"
-                               min="1" max="{{ programa.total_semestres }}" required
+                               min="1" max="{{ programa.num_sem }}" required
                                placeholder="Ej: 3">
-                        <div class="form-text">Entre 1 y {{ programa.total_semestres }}.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Créditos</label>
+                        <input type="number" name="creditos" class="form-control"
+                               min="1" required placeholder="Ej: 3">
                     </div>
 
                     <button type="submit" class="btn btn-success w-100">
@@ -130,7 +126,7 @@
                 </form>
                 {% else %}
                 <p class="text-muted small mb-0">
-                    Todas las asignaturas activas ya están en el plan de este programa.
+                    Todas las asignaturas activas ya están en el plan.
                 </p>
                 {% endif %}
             </div>

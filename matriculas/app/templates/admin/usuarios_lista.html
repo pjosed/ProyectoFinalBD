@@ -25,14 +25,7 @@
             <tbody>
             {% for u in usuarios %}
             <tr class="{% if not u.activo %}table-secondary text-muted{% endif %}">
-                <td>
-                    <span class="fw-semibold">{{ u.nombre_usuario }}</span>
-                    {% if u.debe_cambiar_clave %}
-                    <span class="badge bg-warning text-dark ms-1" title="Pendiente cambio de clave">
-                        <i class="bi-key"></i>
-                    </span>
-                    {% endif %}
-                </td>
+                <td><span class="fw-semibold">{{ u.nombre_usuario }}</span></td>
                 <td>{{ u.nombre }} {{ u.apellido }}</td>
                 <td class="small">{{ u.correo }}</td>
                 <td>
@@ -70,7 +63,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">No hay usuarios registrados.</td>
+                <td colspan="6" class="text-center text-muted py-4">No hay usuarios registrados.</td>
             </tr>
             {% endfor %}
             </tbody>

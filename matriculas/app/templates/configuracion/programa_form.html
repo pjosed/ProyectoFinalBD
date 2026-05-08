@@ -12,68 +12,31 @@
     </a>
 </div>
 
-<div class="card" style="max-width:640px;">
+<div class="card" style="max-width:500px;">
     <div class="card-body">
         <form method="POST">
 
-            <div class="row g-3 mb-3">
-                <div class="col-sm-4">
-                    <label class="form-label fw-semibold">Código <span class="text-danger">*</span></label>
-                    <input type="text" name="codigo" class="form-control text-uppercase"
-                           maxlength="20" required
-                           value="{{ programa.codigo if programa else '' }}"
-                           placeholder="Ej: ING-SIS-P">
-                    <div class="form-text">Único, sin espacios.</div>
-                </div>
-                <div class="col-sm-8">
-                    <label class="form-label fw-semibold">Nombre del programa <span class="text-danger">*</span></label>
-                    <input type="text" name="nombre" class="form-control"
-                           maxlength="150" required
-                           value="{{ programa.nombre if programa else '' }}"
-                           placeholder="Ej: Ingeniería de Sistemas">
-                </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Código <span class="text-danger">*</span></label>
+                <input type="text" name="codigo" class="form-control text-uppercase font-monospace"
+                       maxlength="20" required
+                       value="{{ programa.codigo if programa else '' }}"
+                       placeholder="Ej: ING-SIS">
             </div>
 
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6">
-                    <label class="form-label fw-semibold">Modalidad <span class="text-danger">*</span></label>
-                    <select name="modalidad" class="form-select" required>
-                        <option value="">— Selecciona —</option>
-                        {% for m in modalidades %}
-                        <option value="{{ m }}"
-                            {% if programa and programa.modalidad == m %}selected{% endif %}>
-                            {{ m }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-sm-6">
-                    <label class="form-label fw-semibold">Nivel <span class="text-danger">*</span></label>
-                    <select name="nivel" class="form-select" required>
-                        <option value="">— Selecciona —</option>
-                        {% for n in niveles %}
-                        <option value="{{ n }}"
-                            {% if programa and programa.nivel == n %}selected{% endif %}>
-                            {{ n }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Nombre del programa <span class="text-danger">*</span></label>
+                <input type="text" name="nombre" class="form-control"
+                       maxlength="150" required
+                       value="{{ programa.nombre if programa else '' }}"
+                       placeholder="Ej: Ingeniería de Sistemas">
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-sm-6">
-                    <label class="form-label fw-semibold">Total de semestres <span class="text-danger">*</span></label>
-                    <input type="number" name="total_semestres" class="form-control"
-                           min="1" max="20" required
-                           value="{{ programa.total_semestres if programa else '' }}">
-                </div>
-                <div class="col-sm-6">
-                    <label class="form-label fw-semibold">Total de créditos <span class="text-danger">*</span></label>
-                    <input type="number" name="total_creditos" class="form-control"
-                           min="1" required
-                           value="{{ programa.total_creditos if programa else '' }}">
-                </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Número de semestres <span class="text-danger">*</span></label>
+                <input type="number" name="num_sem" class="form-control"
+                       min="1" max="20" required
+                       value="{{ programa.num_sem if programa else '' }}">
             </div>
 
             <div class="d-flex gap-2">

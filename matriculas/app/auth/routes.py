@@ -51,7 +51,7 @@ def login():
 
         usuario = ejecutar_uno(
             """
-            SELECT u.id_usuario, u.username, u.password_hash,
+            SELECT u.id_usuario, u.username, u.password,
                    u.activo, r.nombre AS nombre_rol,
                    p.nombres, p.apellidos
             FROM   usuario u
@@ -62,7 +62,7 @@ def login():
             (nombre_usuario,),
         )
 
-        if not usuario or not check_password_hash(usuario["password_hash"], contrasena):
+        if not usuario or not check_password_hash(usuario["password"], contrasena):
             flash("Usuario o contraseña incorrectos.", "danger")
             return render_template("auth/login.html")
 
