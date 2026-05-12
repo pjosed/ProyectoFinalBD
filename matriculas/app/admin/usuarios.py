@@ -49,13 +49,13 @@ def usuarios_lista():
     usuarios = ejecutar_consulta(
         """
         SELECT u.id_usuario, u.username AS nombre_usuario, u.activo,
-               u.fech_crea,
+               u.fecha_creacion,
                r.nombre AS nombre_rol,
                p.nombres AS nombre, p.apellidos AS apellido, p.email AS correo
         FROM   usuario u
         JOIN   rol     r ON u.id_rol     = r.id_rol
         JOIN   persona p ON u.id_persona = p.id_persona
-        ORDER  BY u.fech_crea DESC
+        ORDER  BY u.fecha_creacion DESC
         """,
         fetch=True,
     )
@@ -141,7 +141,7 @@ def usuario_nuevo():
         hash_pwd   = generate_password_hash(contrasena)
 
         ejecutar_consulta(
-            "INSERT INTO usuario (id_persona, id_rol, username, password) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO usuario (id_persona, id_rol, username, password_hash) VALUES (%s, %s, %s, %s)",
             (id_persona, int(id_rol), nombre_usuario, hash_pwd),
         )
 
@@ -211,7 +211,7 @@ def usuario_reenviar_clave(id_usuario):
     hash_pwd   = generate_password_hash(contrasena)
 
     ejecutar_consulta(
-        "UPDATE usuario SET password = %s WHERE id_usuario = %s",
+        "UPDATE usuario SET password_hash = %s WHERE id_usuario = %s",
         (hash_pwd, id_usuario),
     )
 
