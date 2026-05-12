@@ -7,6 +7,8 @@ from flask import render_template, session
 from app.admin import admin_bp
 from app.auth.routes import login_requerido
 
+#INFO IMPORTANTE: para correr el programa se necesita modificar todas las líneas que empiecen por configuracion. y cambiarlas a admin. en el diccionario MENUS_POR_ROL, ya que el blueprint de configuracion no está terminado y no se pueden usar esas rutas aún. Se deben cambiar temporalmente a admin.placeholder para poder probar la app sin errores. Luego, cuando el blueprint de configuración esté listo, se cambian nuevamente a configuracion.nombre_de_la_ruta.
+
 MENUS_POR_ROL = {
     "ADMINISTRADOR": [
         {
@@ -31,7 +33,7 @@ MENUS_POR_ROL = {
             "seccion": "Estudiantes",
             "icono": "bi-mortarboard",
             "opciones": [
-                {"label": "Gestionar Estudiantes", "url": "admin.placeholder", "icono": "bi-person-lines-fill"},
+                {"label": "Gestionar Estudiantes", "url": "estudiantes.lista_estudiantes", "icono": "bi-person-lines-fill"},
                 {"label": "Generar Cobros",        "url": "admin.placeholder", "icono": "bi-receipt"},
                 {"label": "Cuenta Corriente",      "url": "admin.placeholder", "icono": "bi-wallet2"},
             ],
@@ -62,7 +64,7 @@ MENUS_POR_ROL = {
             "seccion": "Estudiantes",
             "icono": "bi-mortarboard",
             "opciones": [
-                {"label": "Gestionar Estudiantes", "url": "admin.placeholder", "icono": "bi-person-lines-fill"},
+                {"label": "Gestionar Estudiantes", "url": "estudiantes.lista_estudiantes", "icono": "bi-person-lines-fill"},
             ],
         },
     ],
