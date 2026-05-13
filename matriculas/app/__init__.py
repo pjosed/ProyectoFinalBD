@@ -49,4 +49,12 @@ def create_app():
     from app.volantes import volantes_bp
     app.register_blueprint(volantes_bp, url_prefix="/volantes")
 
+    # Blueprint de Cuentas Corrientes
+    from app.cuentas import cuentas_bp
+    app.register_blueprint(cuentas_bp, url_prefix="/cuentas")
+
+    # Blueprint de Pagos
+    from app.pagos import pagos_bp
+    app.register_blueprint(pagos_bp, url_prefix="/pagos")
+
     return app

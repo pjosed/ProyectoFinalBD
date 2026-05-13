@@ -1,0 +1,58 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Comprobante de Pago #{{ pago.id_pago }} - UniCaribe{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-body text-center py-5">
+
+                <div class="mb-3">
+                    <i class="bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="text-success fw-bold mb-1">¡Pago Registrado!</h3>
+                <p class="text-muted mb-4">El pago fue procesado exitosamente.</p>
+
+                <div class="border rounded p-3 text-start mb-4 bg-light">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted small">Comprobante #</dt>
+                        <dd class="col-sm-7 fw-bold">{{ pago.id_pago }}</dd>
+                        <dt class="col-sm-5 text-muted small">Fecha</dt>
+                        <dd class="col-sm-7 small">
+                            {{ pago.fecha.strftime('%d/%m/%Y %H:%M:%S') if pago.fecha else '—' }}
+                        </dd>
+                        <dt class="col-sm-5 text-muted small">Estudiante</dt>
+                        <dd class="col-sm-7 fw-semibold">{{ pago.apellidos }}, {{ pago.nombres }}</dd>
+                        <dt class="col-sm-5 text-muted small">Documento</dt>
+                        <dd class="col-sm-7">{{ pago.num_doc }}</dd>
+                        <dt class="col-sm-5 text-muted small">Periodo</dt>
+                        <dd class="col-sm-7">{{ pago.nom_periodo }}</dd>
+                        <dt class="col-sm-5 text-muted small">Medio de pago</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-primary">{{ pago.medio }}</span>
+                        </dd>
+                        {% if pago.ref %}
+                        <dt class="col-sm-5 text-muted small">Referencia</dt>
+                        <dd class="col-sm-7 small text-muted">{{ pago.ref }}</dd>
+                        {% endif %}
+                        <dt class="col-sm-5 text-muted small">Monto pagado</dt>
+                        <dd class="col-sm-7 fs-5 fw-bold text-success">${{ "{:,.0f}".format(pago.monto) }}</dd>
+                    </dl>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="{{ url_for('cuentas.detalle_cuenta', id_cuenta=pago.id_cuenta) }}"
+                       class="btn btn-outline-primary">
+                        <i class="bi-wallet2 me-1"></i>Ver Cuenta Corriente
+                    </a>
+                    <a href="{{ url_for('admin.menu') }}" class="btn btn-outline-secondary">
+                        <i class="bi-house me-1"></i>Inicio
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
