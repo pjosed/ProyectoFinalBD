@@ -42,10 +42,10 @@ MENUS_POR_ROL = {
             "seccion": "Reportes",
             "icono": "bi-bar-chart",
             "opciones": [
-                {"label": "Ingreso Esperado",   "url": "admin.placeholder", "icono": "bi-graph-up"},
-                {"label": "Pendientes de Pago", "url": "admin.placeholder", "icono": "bi-exclamation-circle"},
-                {"label": "Ingreso Real",       "url": "admin.placeholder", "icono": "bi-cash-stack"},
-                {"label": "Créditos",           "url": "admin.placeholder", "icono": "bi-credit-card"},
+                {"label": "Ingreso Esperado",   "url": "reportes.ingreso_esperado", "icono": "bi-graph-up"},
+                {"label": "Pendientes de Pago", "url": "reportes.pendientes",       "icono": "bi-exclamation-circle"},
+                {"label": "Ingreso Real",       "url": "reportes.ingreso_real",     "icono": "bi-cash-stack"},
+                {"label": "Créditos",           "url": "reportes.creditos",         "icono": "bi-credit-card"},
             ],
         },
     ],
@@ -74,7 +74,7 @@ MENUS_POR_ROL = {
             "icono": "bi-receipt",
             "opciones": [
                 {"label": "Generar Cobro Individual", "url": "volantes.volante_nuevo", "icono": "bi-person-check"},
-                {"label": "Generación Masiva",        "url": "admin.placeholder", "icono": "bi-people-fill"},
+                {"label": "Generación Masiva",        "url": "volantes.volante_masivo", "icono": "bi-people-fill"},
                 {"label": "Cuenta Corriente",         "url": "cuentas.lista_cuentas", "icono": "bi-wallet2"},
                 {"label": "Simular Pago",             "url": "cuentas.lista_cuentas", "icono": "bi-credit-card-2-front"},
             ],

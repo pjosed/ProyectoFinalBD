@@ -57,4 +57,8 @@ def create_app():
     from app.pagos import pagos_bp
     app.register_blueprint(pagos_bp, url_prefix="/pagos")
 
+    # Blueprint de Reportes
+    from app.reportes import reportes_bp
+    app.register_blueprint(reportes_bp, url_prefix="/reportes")
+
     return app

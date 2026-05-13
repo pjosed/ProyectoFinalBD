@@ -1,0 +1,80 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Ingreso Esperado - UniCaribe{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0"><i class="bi-graph-up me-2"></i>Reporte: Ingreso Esperado</h2>
+</div>
+
+<!-- Filtro -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-sm-4">
+                <label class="form-label small mb-1">Periodo</label>
+                <select name="id_periodo" class="form-select form-select-sm">
+                    <option value="">— Todos los periodos —</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if filtro_periodo == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                    <i class="bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="{{ url_for('reportes.ingreso_esperado') }}" class="btn btn-sm btn-outline-secondary ms-1">
+                    <i class="bi-x-circle me-1"></i>Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Programa</th>
+                        <th>Periodo</th>
+                        <th class="text-center">N° Volantes</th>
+                        <th class="text-end">Total Esperado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in filas %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-secondary me-1">{{ f.cod_programa }}</span>
+                            {{ f.nom_programa }}
+                        </td>
+                        <td class="small">{{ f.nom_periodo }}</td>
+                        <td class="text-center">{{ f.num_volantes }}</td>
+                        <td class="text-end fw-semibold">${{ "{:,.0f}".format(f.total_esperado) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No hay registros para los filtros seleccionados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if filas %}
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="3" class="text-end">Gran Total:</td>
+                        <td class="text-end text-primary">${{ "{:,.0f}".format(gran_total) }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

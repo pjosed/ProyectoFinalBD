@@ -1,0 +1,94 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Pendientes de Pago - UniCaribe{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0"><i class="bi-exclamation-circle me-2 text-danger"></i>Reporte: Pendientes de Pago</h2>
+</div>
+
+<!-- Filtro -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-sm-4">
+                <label class="form-label small mb-1">Periodo</label>
+                <select name="id_periodo" class="form-select form-select-sm">
+                    <option value="">— Todos los periodos —</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}" {% if filtro_periodo == p.id_periodo|string %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                    <i class="bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="{{ url_for('reportes.pendientes') }}" class="btn btn-sm btn-outline-secondary ms-1">
+                    <i class="bi-x-circle me-1"></i>Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Periodo</th>
+                        <th>Programa</th>
+                        <th class="text-end">Total Cobrado</th>
+                        <th class="text-end">Total Pagado</th>
+                        <th class="text-end">Saldo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in filas %}
+                    <tr>
+                        <td>
+                            <span class="text-muted small">
+                                <span class="badge bg-secondary">{{ f.tipo_doc }}</span> {{ f.num_doc }}
+                            </span><br>
+                            <strong>{{ f.apellidos }}, {{ f.nombres }}</strong>
+                        </td>
+                        <td class="small">{{ f.nom_periodo }}</td>
+                        <td class="small">{{ f.nom_programa or '—' }}</td>
+                        <td class="text-end text-danger">${{ "{:,.0f}".format(f.total_cobros) }}</td>
+                        <td class="text-end text-success">${{ "{:,.0f}".format(f.total_pagos) }}</td>
+                        <td class="text-end fw-bold text-danger">${{ "{:,.0f}".format(f.saldo) }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('cuentas.detalle_cuenta', id_cuenta=f.id_cuenta) }}"
+                               class="btn btn-sm btn-outline-primary" title="Ver cuenta">
+                                <i class="bi-wallet2"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No hay estudiantes con saldo pendiente.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if filas %}
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="5" class="text-end">Total Pendiente:</td>
+                        <td class="text-end text-danger">${{ "{:,.0f}".format(total_pendiente) }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
