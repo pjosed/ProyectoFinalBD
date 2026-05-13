@@ -38,12 +38,15 @@ def create_app():
     from app.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    #estas dos lineas de aca abajo se deben comentar temporalmente para correr el programa sin errores, ya que el blueprint de configuracion no esta terminado
     from app.configuracion import configuracion_bp
     app.register_blueprint(configuracion_bp, url_prefix="/configuracion")
 
     # Blueprint de Estudiantes
     from app.estudiantes import estudiantes_bp
     app.register_blueprint(estudiantes_bp, url_prefix="/estudiantes")
+
+    # Blueprint de Volantes
+    from app.volantes import volantes_bp
+    app.register_blueprint(volantes_bp, url_prefix="/volantes")
 
     return app

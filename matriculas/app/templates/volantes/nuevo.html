@@ -1,0 +1,267 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Generar Cobro - UniCaribe{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0"><i class="bi-receipt me-2"></i>Generar Cobro Individual</h2>
+    <a href="{{ url_for('volantes.lista_volantes') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<form method="POST" id="formVolante">
+
+    <!-- Sección 1: Estudiante -->
+    <div class="card mb-3">
+        <div class="card-header fw-semibold"><i class="bi-person me-2"></i>1. Estudiante</div>
+        <div class="card-body">
+            <input type="hidden" name="id_estudiante" id="id_estudiante">
+            <div class="mb-2">
+                <input type="text" id="buscar_estu" class="form-control"
+                       placeholder="Buscar por nombre, apellido o número de documento...">
+            </div>
+            <div id="resultados_estu" class="list-group mb-2"></div>
+            <div id="estu_seleccionado" class="alert alert-success py-2 d-none">
+                <i class="bi-person-check me-2"></i><span id="estu_nombre"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección 2: Periodo y Programa -->
+    <div class="card mb-3">
+        <div class="card-header fw-semibold"><i class="bi-calendar3 me-2"></i>2. Periodo y Programa</div>
+        <div class="card-body row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Periodo Académico <span class="text-danger">*</span></label>
+                <select name="id_periodo" id="id_periodo" class="form-select" required>
+                    <option value="">— Seleccione —</option>
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}">{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Programa <span class="text-danger">*</span></label>
+                <select name="id_programa" id="id_programa" class="form-select" required>
+                    <option value="">— Seleccione —</option>
+                    {% for p in programas %}
+                    <option value="{{ p.id_programa }}">{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Semestre <span class="text-danger">*</span></label>
+                <select name="semestre" id="semestre" class="form-select" required disabled>
+                    <option value="">—</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección 3: Cobro (dinámica) -->
+    <div class="card mb-3" id="seccion_cobro" style="display:none;">
+        <div class="card-header fw-semibold"><i class="bi-cash-coin me-2"></i>3. Cobro</div>
+        <div class="card-body">
+
+            <!-- GLOBAL -->
+            <div id="bloque_global" style="display:none;">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label">Valor a cobrar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" id="valor_global_display" class="form-control fw-bold" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POR_CREDITOS -->
+            <div id="bloque_creditos" style="display:none;">
+                <p class="text-muted small mb-2">Selecciona las asignaturas a matricular:</p>
+                <div id="lista_asignaturas" class="row g-2 mb-3"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted">Créditos: <strong id="total_creditos">0</strong></span>
+                    <span class="text-muted">Valor total:</span>
+                    <span class="fs-5 fw-bold text-success" id="valor_creditos_display">$0</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" id="btn_submit" disabled>
+            <i class="bi-receipt me-1"></i>Generar Volante
+        </button>
+        <a href="{{ url_for('volantes.lista_volantes') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+
+</form>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+const urlSemestres   = "{{ url_for('volantes.ajax_semestres') }}";
+const urlAsignaturas = "{{ url_for('volantes.ajax_asignaturas') }}";
+const urlValor       = "{{ url_for('volantes.ajax_valor') }}";
+const urlBuscar      = "{{ url_for('volantes.ajax_buscar_estudiante') }}";
+
+// ── Buscador de estudiante ───────────────────────────────────────────────────
+let buscarTimer = null;
+document.getElementById('buscar_estu').addEventListener('input', function() {
+    clearTimeout(buscarTimer);
+    const q = this.value.trim();
+    if (q.length < 2) {
+        document.getElementById('resultados_estu').innerHTML = '';
+        return;
+    }
+    buscarTimer = setTimeout(() => {
+        fetch(urlBuscar + '?q=' + encodeURIComponent(q))
+            .then(r => r.json())
+            .then(data => {
+                const div = document.getElementById('resultados_estu');
+                if (!data.length) {
+                    div.innerHTML = '<div class="list-group-item text-muted small">Sin resultados</div>';
+                    return;
+                }
+                div.innerHTML = data.map(e =>
+                    `<button type="button" class="list-group-item list-group-item-action py-1 small"
+                        data-id="${e.id_estudiante}" data-nombre="${e.apellidos}, ${e.nombres} (${e.num_doc})">
+                        ${e.apellidos}, ${e.nombres} — <span class="text-muted">${e.num_doc}</span>
+                    </button>`
+                ).join('');
+                div.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.getElementById('id_estudiante').value = btn.dataset.id;
+                        document.getElementById('estu_nombre').textContent = btn.dataset.nombre;
+                        document.getElementById('estu_seleccionado').classList.remove('d-none');
+                        div.innerHTML = '';
+                        document.getElementById('buscar_estu').value = btn.dataset.nombre;
+                        verificarSubmit();
+                    });
+                });
+            });
+    }, 300);
+});
+
+// ── Cargar semestres al cambiar programa ─────────────────────────────────────
+document.getElementById('id_programa').addEventListener('change', cargarSemestres);
+
+function cargarSemestres() {
+    const idProg = document.getElementById('id_programa').value;
+    const sel = document.getElementById('semestre');
+    sel.innerHTML = '<option value="">—</option>';
+    sel.disabled = true;
+    ocultarCobro();
+
+    if (!idProg) return;
+    const fd = new FormData();
+    fd.append('id_programa', idProg);
+    fetch(urlSemestres, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = 'Semestre ' + s;
+                sel.appendChild(opt);
+            });
+            sel.disabled = false;
+        });
+}
+
+// ── Cargar cobro al cambiar semestre o periodo ───────────────────────────────
+document.getElementById('semestre').addEventListener('change', cargarCobro);
+document.getElementById('id_periodo').addEventListener('change', function() {
+    if (document.getElementById('semestre').value) cargarCobro();
+});
+
+function cargarCobro() {
+    const idPeriodo = document.getElementById('id_periodo').value;
+    const idProg    = document.getElementById('id_programa').value;
+    const semestre  = document.getElementById('semestre').value;
+    ocultarCobro();
+    if (!idPeriodo || !idProg || !semestre) return;
+
+    const fd = new FormData();
+    fd.append('id_periodo', idPeriodo);
+    fd.append('id_programa', idProg);
+    fetch(urlValor, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { alert(data.error); return; }
+            document.getElementById('seccion_cobro').style.display = '';
+            if (data.modalidad === 'GLOBAL') {
+                document.getElementById('bloque_global').style.display = '';
+                document.getElementById('valor_global_display').value =
+                    '$' + data.valor.toLocaleString('es-CO', {maximumFractionDigits:0});
+                verificarSubmit();
+            } else {
+                document.getElementById('bloque_creditos').style.display = '';
+                cargarAsignaturas(idProg, semestre, data);
+            }
+        })
+        .catch(() => alert('Error al obtener la regla de cobro.'));
+}
+
+function cargarAsignaturas(idProg, semestre, regla) {
+    const fd = new FormData();
+    fd.append('id_programa', idProg);
+    fd.append('semestre', semestre);
+    fetch(urlAsignaturas, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            const div = document.getElementById('lista_asignaturas');
+            div.innerHTML = data.map(a =>
+                `<div class="col-md-6">
+                    <div class="form-check border rounded p-2">
+                        <input class="form-check-input asig-check" type="checkbox"
+                               name="asignaturas" value="${a.id_asignatura}"
+                               data-creditos="${a.creditos}"
+                               id="asig_${a.id_asignatura}">
+                        <label class="form-check-label small" for="asig_${a.id_asignatura}">
+                            <strong>${a.codigo}</strong> — ${a.nombre}
+                            <span class="badge bg-secondary ms-1">${a.creditos} cr.</span>
+                        </label>
+                    </div>
+                </div>`
+            ).join('');
+            div.querySelectorAll('.asig-check').forEach(cb => {
+                cb.addEventListener('change', () => recalcularCreditos(regla.valor_por_credito || 0));
+            });
+        });
+}
+
+function recalcularCreditos(valorCredito) {
+    const checks = document.querySelectorAll('.asig-check:checked');
+    let total = 0;
+    checks.forEach(c => { total += parseInt(c.dataset.creditos); });
+    const valor = total * valorCredito;
+    document.getElementById('total_creditos').textContent = total;
+    document.getElementById('valor_creditos_display').textContent =
+        '$' + valor.toLocaleString('es-CO', {maximumFractionDigits:0});
+    verificarSubmit();
+}
+
+function ocultarCobro() {
+    document.getElementById('seccion_cobro').style.display = 'none';
+    document.getElementById('bloque_global').style.display = 'none';
+    document.getElementById('bloque_creditos').style.display = 'none';
+    document.getElementById('lista_asignaturas').innerHTML = '';
+    document.getElementById('btn_submit').disabled = true;
+}
+
+function verificarSubmit() {
+    const idEstu   = document.getElementById('id_estudiante').value;
+    const idPer    = document.getElementById('id_periodo').value;
+    const idProg   = document.getElementById('id_programa').value;
+    const semestre = document.getElementById('semestre').value;
+    const globalOk = document.getElementById('bloque_global').style.display !== 'none';
+    const creditosOk = document.querySelectorAll('.asig-check:checked').length > 0;
+    const ok = idEstu && idPer && idProg && semestre && (globalOk || creditosOk);
+    document.getElementById('btn_submit').disabled = !ok;
+}
+</script>
+{% endblock %}

@@ -34,7 +34,7 @@ MENUS_POR_ROL = {
             "icono": "bi-mortarboard",
             "opciones": [
                 {"label": "Gestionar Estudiantes", "url": "estudiantes.lista_estudiantes", "icono": "bi-person-lines-fill"},
-                {"label": "Generar Cobros",        "url": "admin.placeholder", "icono": "bi-receipt"},
+                {"label": "Generar Cobros",        "url": "volantes.lista_volantes", "icono": "bi-receipt"},
                 {"label": "Cuenta Corriente",      "url": "admin.placeholder", "icono": "bi-wallet2"},
             ],
         },
@@ -73,7 +73,7 @@ MENUS_POR_ROL = {
             "seccion": "Cobros",
             "icono": "bi-receipt",
             "opciones": [
-                {"label": "Generar Cobro Individual", "url": "admin.placeholder", "icono": "bi-person-check"},
+                {"label": "Generar Cobro Individual", "url": "volantes.volante_nuevo", "icono": "bi-person-check"},
                 {"label": "Generación Masiva",        "url": "admin.placeholder", "icono": "bi-people-fill"},
                 {"label": "Cuenta Corriente",         "url": "admin.placeholder", "icono": "bi-wallet2"},
                 {"label": "Simular Pago",             "url": "admin.placeholder", "icono": "bi-credit-card-2-front"},
