@@ -55,12 +55,12 @@ def buscar():
             FROM estudiante e
             JOIN cuenta_corriente  cc ON cc.id_estudiante = e.id_estudiante
             LEFT JOIN volante_matricula vm ON vm.id_cuenta = cc.id_cuenta
-            LEFT JOIN programa          pr ON vm.id_prog   = pr.id_programa
+            LEFT JOIN programa_academico          pr ON vm.id_prog   = pr.id_programa
             WHERE e.activo = TRUE
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante, cc.id_cuenta
+            GROUP BY e.id_estudiante, cc.id_cuenta, pr.nombre
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
@@ -118,7 +118,7 @@ def cuenta_corriente(id_cuenta):
         SELECT v.id_movimiento,
                v.movimiento,
                v.codigo,
-               v.tipo,
+               v.tipo AS tipo,
                v.valor,
                v.saldo_acumulado,
                v.fecha,

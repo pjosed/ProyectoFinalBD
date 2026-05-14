@@ -24,23 +24,19 @@ print("─" * 65)
 print(f"""
 USE matriculas_uni;
 
--- 1. Persona del administrador
 INSERT IGNORE INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
     ('CC', '0000000000', 'Administrador', 'Sistema', 'admin@unicaribe.edu.co', '3001234567');
 
--- 2. Usuario administrador (contraseña: {CONTRASENA})
-INSERT IGNORE INTO usuario (id_persona, id_rol, username, password_hash, debe_cambiar_clave)
+INSERT IGNORE INTO usuario (id_persona, id_rol, username, password)
 SELECT
     p.id_persona,
     r.id_rol,
     'admin',
-    '{hash_generado}',
-    0
+    'scrypt:32768:8:1$uBvvaDV3gEn6rdpv$db5521a59afa5fdfe6da166104ef10251d94ef8fc82f4567c1e0c182143268fa78f3b685fa910f4c1e0c7ae80d61b7ee30d6082a8dd289ff875c4ad90c274c88'
 FROM persona p
 JOIN rol r ON r.nombre = 'ADMINISTRADOR'
 WHERE p.email = 'admin@unicaribe.edu.co';
 
--- Verificar
 SELECT u.username, r.nombre AS rol, p.nombres, p.apellidos, u.activo
 FROM   usuario u
 JOIN   rol     r ON u.id_rol     = r.id_rol

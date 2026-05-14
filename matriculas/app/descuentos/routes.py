@@ -85,12 +85,12 @@ def buscar():
             FROM estudiante e
             LEFT JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
             LEFT JOIN volante_matricula vm ON vm.id_cuenta    = cc.id_cuenta
-            LEFT JOIN programa          pr ON vm.id_prog      = pr.id_programa
+            LEFT JOIN programa_academico          pr ON vm.id_prog      = pr.id_programa
             WHERE e.activo = TRUE
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante
+            GROUP BY e.id_estudiante, pr.nombre
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
@@ -293,6 +293,6 @@ def resultado(id_estudiante):
 
     descuentos = _get_descuentos_aplicados(cuenta['id_cuenta'])
 
-    return render_template('descuentos/resultado.html',
+    return render_template('descuentos/descuentos_resultado.html',
                            cuenta=cuenta,
                            descuentos=descuentos)

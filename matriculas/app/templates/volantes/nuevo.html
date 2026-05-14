@@ -229,7 +229,7 @@ function cargarAsignaturas(idProg, semestre, regla) {
                 </div>`
             ).join('');
             div.querySelectorAll('.asig-check').forEach(cb => {
-                cb.addEventListener('change', () => recalcularCreditos(regla.valor_por_credito || 0));
+                cb.addEventListener('change', () => recalcularCreditos(regla.valor_credito || 0));
             });
         });
 }

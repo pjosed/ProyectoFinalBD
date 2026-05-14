@@ -16,7 +16,7 @@ def lista_volantes():
     id_programa = request.args.get('id_programa', '')
 
     sql = """
-        SELECT vm.id_volante, cc.fecha_creacion AS fecha_gen, vm.val_tot, vm.semestre, vm.modalidad,
+        SELECT vm.id_volante, vm.fecha_gen, vm.val_tot, vm.semestre, vm.modalidad,
                e.nombres, e.apellidos, e.num_doc,
                pa.nombre AS nom_periodo,
                p.nombre  AS nom_programa, p.codigo AS cod_programa
@@ -24,7 +24,7 @@ def lista_volantes():
         JOIN cuenta_corriente  cc ON vm.id_cuenta = cc.id_cuenta
         JOIN estudiante        e  ON cc.id_estudiante = e.id_estudiante
         JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo
-        JOIN programa          p  ON vm.id_prog = p.id_programa
+        JOIN programa_academico p  ON vm.id_prog = p.id_programa
         WHERE 1=1
     """
     params = []
@@ -34,7 +34,7 @@ def lista_volantes():
     if id_programa:
         sql += " AND vm.id_prog = %s"
         params.append(id_programa)
-    sql += " ORDER BY cc.fecha_creacion DESC"
+    sql += " ORDER BY cc.fecha_cre DESC"
 
     volantes  = ejecutar_consulta(sql, params, fetch=True)
     periodos  = ejecutar_consulta(
@@ -42,7 +42,7 @@ def lista_volantes():
         fetch=True
     )
     programas = ejecutar_consulta(
-        "SELECT id_programa, nombre, codigo FROM programa WHERE activo=1 ORDER BY nombre",
+        "SELECT id_programa, nombre, codigo FROM programa_academico WHERE activo=1 ORDER BY nombre",
         fetch=True
     )
     return render_template('volantes/lista.html',
@@ -78,7 +78,7 @@ def ajax_asignaturas():
     if not id_programa or not semestre:
         return jsonify([])
     asignaturas = ejecutar_consulta(
-        """SELECT a.id_asignatura, a.codigo, a.nombre, a.creditos
+        """SELECT a.id_asignatura, a.codigo, a.nombre, pe.creditos
            FROM plan_estudio pe
            JOIN asignatura   a ON pe.id_asignatura = a.id_asignatura
            WHERE pe.id_programa=%s AND pe.semestre=%s
@@ -98,9 +98,9 @@ def ajax_valor():
     ids_asig    = request.form.getlist('asignaturas[]')
 
     regla = ejecutar_uno(
-        """SELECT modalidad_cobro, valor_global, valor_por_credito
+        """SELECT modalidad_cobro, valor_global, valor_credito
            FROM regla_cobro
-           WHERE id_periodo=%s AND id_programa=%s AND activo=1""",
+           WHERE id_periodo=%s AND id_programa=%s""",
         (id_periodo, id_programa)
     )
     if not regla:
@@ -113,17 +113,17 @@ def ajax_valor():
             'creditos': 0
         })
     else:
-        vpc = float(regla['valor_por_credito'])
+        vpc = float(regla['valor_credito'])
         if not ids_asig:
-            return jsonify({'modalidad': 'POR_CREDITOS', 'valor': 0, 'creditos': 0, 'valor_por_credito': vpc})
+            return jsonify({'modalidad': 'POR_CREDITOS', 'valor': 0, 'creditos': 0, 'valor_credito': vpc})
         placeholders = ','.join(['%s'] * len(ids_asig))
         tot = ejecutar_uno(
-            f"SELECT SUM(a.creditos) AS total FROM asignatura a WHERE a.id_asignatura IN ({placeholders})",
+            f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
             ids_asig
         )
         creditos = int(tot['total'] or 0) if tot else 0
         valor    = creditos * vpc
-        return jsonify({'modalidad': 'POR_CREDITOS', 'valor': valor, 'creditos': creditos, 'valor_por_credito': vpc})
+        return jsonify({'modalidad': 'POR_CREDITOS', 'valor': valor, 'creditos': creditos, 'valor_credito': vpc})
 
 
 # ─── AJAX: buscar estudiante ─────────────────────────────────────────────────
@@ -156,11 +156,11 @@ def volante_nuevo():
         fetch=True
     )
     programas = ejecutar_consulta(
-        "SELECT id_programa, nombre, codigo FROM programa WHERE activo=1 ORDER BY nombre",
+        "SELECT id_programa, nombre, codigo FROM programa_academico WHERE activo=1 ORDER BY nombre",
         fetch=True
     )
     cod_cobro = ejecutar_uno(
-        "SELECT id_codigo FROM codigo_detalle WHERE codigo='MATRICULA' AND grupo='COBRO' AND activo=1"
+        "SELECT id_codigo FROM codigo_detalle WHERE codigo='PMAT' AND grupo='COBRO'"
     )
 
     if request.method == 'POST':
@@ -176,9 +176,9 @@ def volante_nuevo():
                                    periodos=periodos or [], programas=programas or [])
 
         regla = ejecutar_uno(
-            """SELECT modalidad_cobro, valor_global, valor_por_credito
+            """SELECT modalidad_cobro, valor_global, valor_credito
                FROM regla_cobro
-               WHERE id_periodo=%s AND id_programa=%s AND activo=1""",
+               WHERE id_periodo=%s AND id_programa=%s""",
             (id_per, id_prog)
         )
         if not regla:
@@ -196,11 +196,11 @@ def volante_nuevo():
                                        periodos=periodos or [], programas=programas or [])
             placeholders = ','.join(['%s'] * len(ids_asig))
             tot = ejecutar_uno(
-                f"SELECT SUM(a.creditos) AS total FROM asignatura a WHERE a.id_asignatura IN ({placeholders})",
+                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
                 ids_asig
             )
             creditos  = int(tot['total'] or 0) if tot else 0
-            val_tot   = creditos * float(regla['valor_por_credito'])
+            val_tot   = creditos * float(regla['valor_credito'])
             modalidad = 'Creditos'
 
         id_usuario = session['usuario_id']
@@ -242,7 +242,13 @@ def volante_nuevo():
             )
             id_cuenta = cursor.fetchone()['id_cuenta']
 
-            # 4. movimiento_cuenta
+            # 4. Actualizar id_cuenta en volante_matricula
+            cursor.execute(
+                "UPDATE volante_matricula SET id_cuenta = %s WHERE id_volante = %s",
+                (id_cuenta, id_volante)
+            )
+
+            # 5. movimiento_cuenta
             cursor.execute(
                 """INSERT INTO movimiento_cuenta
                    (id_cuenta, monto, descrip, id_codigo, fecha, id_usuario)
@@ -285,7 +291,7 @@ def detalle_volante(id_volante):
            FROM volante_matricula vm
            JOIN estudiante        e  ON vm.id_estu = e.id_estudiante
            JOIN periodo_academico pa ON vm.id_per  = pa.id_periodo
-           JOIN programa          p  ON vm.id_prog = p.id_programa
+           JOIN programa_academico p  ON vm.id_prog = p.id_programa
            WHERE vm.id_volante = %s""",
         (id_volante,)
     )
@@ -294,11 +300,13 @@ def detalle_volante(id_volante):
         return redirect(url_for('volantes.lista_volantes'))
 
     asignaturas = ejecutar_consulta(
-        """SELECT a.codigo, a.nombre, a.creditos
+        """SELECT a.codigo, a.nombre, pe.creditos
            FROM volante_asignatura va
            JOIN asignatura          a ON va.id_asig = a.id_asignatura
+           JOIN plan_estudio        pe ON pe.id_asignatura = a.id_asignatura
+                                      AND pe.id_programa = %s
            WHERE va.id_volante = %s""",
-        (id_volante,), fetch=True
+        (volante['id_prog'], id_volante), fetch=True
     )
 
     cuenta = ejecutar_uno(
@@ -355,11 +363,11 @@ def volante_masivo():
         fetch=True
     )
     programas = ejecutar_consulta(
-        "SELECT id_programa, nombre, codigo FROM programa WHERE activo=1 ORDER BY nombre",
+        "SELECT id_programa, nombre, codigo FROM programa_academico WHERE activo=1 ORDER BY nombre",
         fetch=True
     )
     cod_cobro = ejecutar_uno(
-        "SELECT id_codigo FROM codigo_detalle WHERE codigo='MATRICULA' AND grupo='COBRO' AND activo=1"
+        "SELECT id_codigo FROM codigo_detalle WHERE codigo='PMAT' AND grupo='COBRO'"
     )
 
     if request.method == 'POST':
@@ -379,8 +387,8 @@ def volante_masivo():
                                    periodos=periodos or [], programas=programas or [])
 
         regla = ejecutar_uno(
-            """SELECT modalidad_cobro, valor_global, valor_por_credito
-               FROM regla_cobro WHERE id_periodo=%s AND id_programa=%s AND activo=1""",
+            """SELECT modalidad_cobro, valor_global, valor_credito
+               FROM regla_cobro WHERE id_periodo=%s AND id_programa=%s""",
             (id_per, id_prog)
         )
         if not regla:
@@ -398,11 +406,11 @@ def volante_masivo():
                                        periodos=periodos or [], programas=programas or [])
             placeholders = ','.join(['%s'] * len(ids_asig))
             tot = ejecutar_uno(
-                f"SELECT SUM(a.creditos) AS total FROM asignatura a WHERE a.id_asignatura IN ({placeholders})",
+                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
                 ids_asig
             )
             creditos  = int(tot['total'] or 0) if tot else 0
-            val_tot   = creditos * float(regla['valor_por_credito'])
+            val_tot   = creditos * float(regla['valor_credito'])
             modalidad = 'Creditos'
 
         id_usuario = session['usuario_id']
@@ -441,6 +449,12 @@ def volante_masivo():
                     (id_estu, id_per)
                 )
                 id_cuenta = cursor.fetchone()['id_cuenta']
+
+                # Actualizar id_cuenta en volante_matricula
+                cursor.execute(
+                    "UPDATE volante_matricula SET id_cuenta = %s WHERE id_volante = %s",
+                    (id_cuenta, id_volante)
+                )
 
                 cursor.execute(
                     """INSERT INTO movimiento_cuenta

@@ -54,7 +54,7 @@
                             <td class="text-center">{{ item.creditos }}</td>
                             <td class="text-center">
                                 <form method="POST"
-                                      action="{{ url_for('configuracion.plan_quitar', id_plan=item.id_plan) }}"
+                                      action="{{ url_for('configuracion.plan_quitar', id_programa=programa.id_programa, id_plan=item.id_plan) }}"
                                       onsubmit="return confirm('¿Quitar esta asignatura del plan?')">
                                     <button class="btn btn-sm btn-outline-danger">
                                         <i class="bi-trash3"></i>

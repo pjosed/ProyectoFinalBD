@@ -14,12 +14,23 @@ def lista_cuentas():
     q          = request.args.get('q', '').strip()
 
     sql = """
-        SELECT cc.id_cuenta, cc.fecha_creacion,
+        SELECT cc.id_cuenta, cc.fecha_cre,
                e.id_estudiante, e.nombres, e.apellidos, e.num_doc,
                pa.nombre AS nom_periodo,
-               cc.total_cobros,
-               cc.total_pagos,
-               cc.saldo_pendiente AS saldo
+               COALESCE((SELECT SUM(mc.monto)
+                         FROM movimiento_cuenta mc
+                         JOIN codigo_detalle cd ON mc.id_codigo = cd.id_codigo
+                         WHERE mc.id_cuenta = cc.id_cuenta AND cd.grupo = 'COBRO'), 0) AS total_cobros,
+               COALESCE((SELECT SUM(pg.monto)
+                         FROM pago pg
+                         WHERE pg.id_cuenta = cc.id_cuenta), 0) AS total_pagos,
+               COALESCE((SELECT SUM(mc.monto)
+                         FROM movimiento_cuenta mc
+                         JOIN codigo_detalle cd ON mc.id_codigo = cd.id_codigo
+                         WHERE mc.id_cuenta = cc.id_cuenta AND cd.grupo = 'COBRO'), 0) -
+               COALESCE((SELECT SUM(pg.monto)
+                         FROM pago pg
+                         WHERE pg.id_cuenta = cc.id_cuenta), 0) AS saldo
         FROM cuenta_corriente cc
         JOIN estudiante        e  ON cc.id_estudiante = e.id_estudiante
         JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo
@@ -36,7 +47,6 @@ def lista_cuentas():
     sql += " ORDER BY pa.nombre DESC, e.apellidos"
 
     cuentas = ejecutar_consulta(sql, params, fetch=True) or []
-
     periodos = ejecutar_consulta(
         "SELECT id_periodo, nombre FROM periodo_academico ORDER BY nombre DESC",
         fetch=True
@@ -55,7 +65,7 @@ def lista_cuentas():
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR', 'ASISTENTE')
 def detalle_cuenta(id_cuenta):
     cuenta = ejecutar_uno(
-        """SELECT cc.id_cuenta, cc.fecha_creacion,
+        """SELECT cc.id_cuenta, cc.fecha_cre,
                   e.nombres, e.apellidos, e.num_doc, e.tipo_doc,
                   pa.nombre AS nom_periodo
            FROM cuenta_corriente cc
@@ -69,9 +79,9 @@ def detalle_cuenta(id_cuenta):
         return redirect(url_for('cuentas.lista_cuentas'))
 
     movimientos = ejecutar_consulta(
-        """SELECT mc.id_movimiento, mc.valor AS monto, mc.descripcion AS descrip,
-                  mc.fecha, mc.tipo,
-                  cd.codigo AS cod_concepto, cd.grupo, cd.nombre AS nom_concepto
+        """SELECT mc.id_movimiento, mc.monto, mc.descrip,
+                  mc.fecha, cd.grupo,
+                  cd.codigo AS cod_concepto, cd.descripcion AS nom_concepto
            FROM movimiento_cuenta mc
            JOIN codigo_detalle    cd ON mc.id_codigo = cd.id_codigo
            WHERE mc.id_cuenta = %s
@@ -80,15 +90,14 @@ def detalle_cuenta(id_cuenta):
     ) or []
 
     pagos = ejecutar_consulta(
-        """SELECT pg.id_pago, pg.valor AS monto, pg.metodo_pago AS medio,
-                  pg.fecha_pago AS fecha, pg.observacion AS ref
+        """SELECT pg.id_pago, pg.monto, pg.medio, pg.ref, pg.fecha
            FROM pago pg
            WHERE pg.id_cuenta = %s
-           ORDER BY pg.fecha_pago ASC""",
+           ORDER BY pg.fecha ASC""",
         (id_cuenta,), fetch=True
     ) or []
 
-    total_cobros = sum(float(m['monto']) for m in movimientos if m['tipo'] == 'COBRO')
+    total_cobros = sum(float(m['monto']) for m in movimientos if m['grupo'] == 'COBRO')
     total_pagos  = sum(float(p['monto']) for p in pagos)
     saldo        = total_cobros - total_pagos
 

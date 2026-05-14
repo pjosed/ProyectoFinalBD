@@ -9,7 +9,7 @@ from config.database import ejecutar_consulta, ejecutar_uno
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
 def programas_lista():
     programas = ejecutar_consulta(
-        "SELECT id_programa, codigo, nombre, num_semestres AS num_sem, activo FROM programa_academico ORDER BY nombre",
+        "SELECT id_programa, codigo, nombre, num_sem, activo FROM programa_academico ORDER BY nombre",
         fetch=True
     )
     return render_template('configuracion/programas_lista.html', programas=programas or [])
@@ -22,13 +22,13 @@ def programa_nuevo():
     if request.method == 'POST':
         codigo       = request.form.get('codigo', '').strip().upper()
         nombre       = request.form.get('nombre', '').strip()
-        num_semestres = request.form.get('num_semestres', 9)
+        num_sem = request.form.get('num_sem', 9)
         if not codigo or not nombre:
             flash('Código y nombre son obligatorios.', 'warning')
             return render_template('configuracion/programa_form.html', programa=None)
         ejecutar_consulta(
-            "INSERT INTO programa_academico (codigo, nombre, num_semestres) VALUES (%s, %s, %s)",
-            (codigo, nombre, num_semestres)
+            "INSERT INTO programa_academico (codigo, nombre, num_sem) VALUES (%s, %s, %s)",
+            (codigo, nombre, num_sem)
         )
         flash('Programa creado correctamente.', 'success')
         return redirect(url_for('configuracion.programas_lista'))
@@ -47,10 +47,10 @@ def programa_editar(id_programa):
         return redirect(url_for('configuracion.programas_lista'))
     if request.method == 'POST':
         nombre        = request.form.get('nombre', '').strip()
-        num_semestres = request.form.get('num_semestres', programa['num_semestres'])
+        num_sem = request.form.get('num_sem', programa['num_sem'])
         ejecutar_consulta(
-            "UPDATE programa_academico SET nombre=%s, num_semestres=%s WHERE id_programa=%s",
-            (nombre, num_semestres, id_programa)
+            "UPDATE programa_academico SET nombre=%s, num_sem=%s WHERE id_programa=%s",
+            (nombre, num_sem, id_programa)
         )
         flash('Programa actualizado.', 'success')
         return redirect(url_for('configuracion.programas_lista'))

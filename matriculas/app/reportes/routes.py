@@ -11,7 +11,52 @@ def _get_periodos():
     ) or []
 
 
-# ─── Reporte 1: Ingreso Esperado ─────────────────────────────────────────────
+# ─── Reporte 1: Listado de Estudiantes ───────────────────────────────────────
+
+@reportes_bp.route('/listado-estudiantes')
+@login_requerido
+@rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
+def listado_estudiantes():
+    id_periodo  = request.args.get('id_periodo', '')
+    id_programa = request.args.get('id_programa', '')
+
+    sql = """
+        SELECT e.nombres, e.apellidos, e.num_doc,
+               pa.nombre AS nom_periodo,
+               p.nombre  AS nom_programa, p.codigo AS cod_programa,
+               vm.semestre, vm.modalidad, vm.val_tot
+        FROM volante_matricula  vm
+        JOIN estudiante         e  ON vm.id_estu = e.id_estudiante
+        JOIN periodo_academico  pa ON vm.id_per  = pa.id_periodo
+        JOIN programa_academico p  ON vm.id_prog = p.id_programa
+        WHERE 1=1
+    """
+    params = []
+    if id_periodo:
+        sql += " AND vm.id_per = %s"
+        params.append(id_periodo)
+    if id_programa:
+        sql += " AND vm.id_prog = %s"
+        params.append(id_programa)
+    sql += " ORDER BY pa.nombre DESC, e.apellidos"
+
+    filas      = ejecutar_consulta(sql, params, fetch=True) or []
+    gran_total = sum(float(f['val_tot']) for f in filas)
+    programas  = ejecutar_consulta(
+        "SELECT id_programa, nombre FROM programa_academico WHERE activo=1 ORDER BY nombre",
+        fetch=True
+    ) or []
+
+    return render_template('reportes/listado_estudiantes.html',
+                           filas=filas,
+                           gran_total=gran_total,
+                           periodos=_get_periodos(),
+                           programas=programas,
+                           filtro_periodo=id_periodo,
+                           filtro_programa=id_programa)
+
+
+# ─── Reporte 2: Ingreso Esperado ─────────────────────────────────────────────
 
 @reportes_bp.route('/ingreso-esperado')
 @login_requerido
@@ -25,8 +70,8 @@ def ingreso_esperado():
                COUNT(vm.id_volante) AS num_volantes,
                SUM(vm.val_tot)      AS total_esperado
         FROM volante_matricula vm
-        JOIN programa          p  ON vm.id_prog = p.id_programa
-        JOIN periodo_academico pa ON vm.id_per  = pa.id_periodo
+        JOIN programa_academico p  ON vm.id_prog = p.id_programa
+        JOIN periodo_academico  pa ON vm.id_per  = pa.id_periodo
         WHERE 1=1
     """
     params = []
@@ -35,7 +80,7 @@ def ingreso_esperado():
         params.append(id_periodo)
     sql += " GROUP BY p.id_programa, pa.id_periodo ORDER BY pa.nombre DESC, p.nombre"
 
-    filas = ejecutar_consulta(sql, params, fetch=True) or []
+    filas      = ejecutar_consulta(sql, params, fetch=True) or []
     gran_total = sum(float(f['total_esperado']) for f in filas)
 
     return render_template('reportes/ingreso_esperado.html',
@@ -45,7 +90,7 @@ def ingreso_esperado():
                            filtro_periodo=id_periodo)
 
 
-# ─── Reporte 2: Pendientes de Pago ───────────────────────────────────────────
+# ─── Reporte 3: Pendientes de Pago ───────────────────────────────────────────
 
 @reportes_bp.route('/pendientes')
 @login_requerido
@@ -70,9 +115,9 @@ def pendientes():
         FROM cuenta_corriente  cc
         JOIN estudiante        e  ON cc.id_estudiante = e.id_estudiante
         JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo
-        LEFT JOIN volante_matricula vm ON vm.id_estu = cc.id_estudiante
-                                      AND vm.id_per  = cc.id_periodo
-        LEFT JOIN programa          p  ON vm.id_prog  = p.id_programa
+        LEFT JOIN volante_matricula  vm ON vm.id_estu = cc.id_estudiante
+                                       AND vm.id_per  = cc.id_periodo
+        LEFT JOIN programa_academico p  ON vm.id_prog  = p.id_programa
         WHERE 1=1
     """
     params = []
@@ -93,7 +138,7 @@ def pendientes():
                            filtro_periodo=id_periodo)
 
 
-# ─── Reporte 3: Ingreso Real ──────────────────────────────────────────────────
+# ─── Reporte 4: Ingreso Real ──────────────────────────────────────────────────
 
 @reportes_bp.route('/ingreso-real')
 @login_requerido
@@ -117,7 +162,7 @@ def ingreso_real():
         params.append(id_periodo)
     sql += " GROUP BY pa.id_periodo, pg.medio ORDER BY pa.nombre DESC, pg.medio"
 
-    filas = ejecutar_consulta(sql, params, fetch=True) or []
+    filas      = ejecutar_consulta(sql, params, fetch=True) or []
     gran_total = sum(float(f['total_recibido']) for f in filas)
 
     return render_template('reportes/ingreso_real.html',
@@ -127,7 +172,7 @@ def ingreso_real():
                            filtro_periodo=id_periodo)
 
 
-# ─── Reporte 4: Créditos ──────────────────────────────────────────────────────
+# ─── Reporte 5: Créditos ──────────────────────────────────────────────────────
 
 @reportes_bp.route('/creditos')
 @login_requerido
@@ -142,15 +187,17 @@ def creditos():
                vm.semestre, vm.val_tot, vm.id_volante,
                COUNT(va.id_vol_asig) AS num_asignaturas,
                COALESCE((
-                   SELECT SUM(a2.creditos)
+                   SELECT SUM(pe2.creditos)
                    FROM volante_asignatura va2
                    JOIN asignatura a2 ON va2.id_asig = a2.id_asignatura
+                   JOIN plan_estudio pe2 ON pe2.id_asignatura = a2.id_asignatura
+                                       AND pe2.id_programa = vm.id_prog
                    WHERE va2.id_volante = vm.id_volante
                ), 0) AS total_creditos
         FROM volante_matricula  vm
         JOIN estudiante         e  ON vm.id_estu = e.id_estudiante
         JOIN periodo_academico  pa ON vm.id_per  = pa.id_periodo
-        JOIN programa           p  ON vm.id_prog = p.id_programa
+        JOIN programa_academico p  ON vm.id_prog = p.id_programa
         LEFT JOIN volante_asignatura va ON va.id_volante = vm.id_volante
         WHERE vm.modalidad = 'Creditos'
     """
@@ -160,9 +207,9 @@ def creditos():
         params.append(id_periodo)
     sql += " GROUP BY vm.id_volante ORDER BY pa.nombre DESC, e.apellidos"
 
-    filas = ejecutar_consulta(sql, params, fetch=True) or []
-    total_valor   = sum(float(f['val_tot'])         for f in filas)
-    total_creditos = sum(int(f['total_creditos'])    for f in filas)
+    filas          = ejecutar_consulta(sql, params, fetch=True) or []
+    total_valor    = sum(float(f['val_tot'])       for f in filas)
+    total_creditos = sum(int(f['total_creditos'])  for f in filas)
 
     return render_template('reportes/creditos.html',
                            filas=filas,
@@ -170,3 +217,5 @@ def creditos():
                            total_creditos=total_creditos,
                            periodos=_get_periodos(),
                            filtro_periodo=id_periodo)
+
+

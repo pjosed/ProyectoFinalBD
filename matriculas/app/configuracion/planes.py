@@ -9,7 +9,7 @@ from config.database import ejecutar_consulta, ejecutar_uno
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
 def planes_lista():
     programas = ejecutar_consulta(
-        """SELECT p.id_programa, p.codigo, p.nombre,
+        """SELECT p.id_programa, p.codigo, p.nombre, p.num_sem, p.activo,
           COUNT(pe.id_plan) AS num_asignaturas
    FROM programa_academico p
    LEFT JOIN plan_estudio pe ON p.id_programa = pe.id_programa
@@ -37,4 +37,17 @@ def plan_detalle(id_programa):
         (id_programa,), fetch=True
     )
     return render_template('configuracion/plan_detalle.html',
-                           programa=programa, asignaturas=asignaturas or [])
+                           programa=programa, plan=asignaturas, disponibles=[] or [])
+
+@configuracion_bp.route('/planes/<int:id_programa>/quitar/<int:id_plan>', methods=['POST'])
+@login_requerido
+@rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
+def plan_quitar(id_programa, id_plan):
+    ejecutar_consulta(
+        "DELETE FROM plan_estudio WHERE id_plan = %s",
+        (id_plan,)
+    )
+    flash('Asignatura quitada del plan.', 'info')
+    return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
+
+

@@ -51,7 +51,7 @@ def login():
 
         usuario = ejecutar_uno(
             """
-            SELECT u.id_usuario, u.username,u.password_hash AS password,
+            SELECT u.id_usuario, u.username,u.password,
                    u.activo, r.nombre AS nombre_rol,
                    p.nombres, p.apellidos
             FROM   usuario u

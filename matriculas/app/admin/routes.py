@@ -53,6 +53,7 @@ MENUS_POR_ROL = {
             "seccion": "Reportes",
             "icono": "bi-bar-chart",
             "opciones": [
+                {"label": "Listado Estudiantes", "url": "reportes.listado_estudiantes", "icono": "bi-people"},
                 {"label": "Ingreso Esperado",   "url": "reportes.ingreso_esperado", "icono": "bi-graph-up"},
                 {"label": "Pendientes de Pago", "url": "reportes.pendientes",       "icono": "bi-exclamation-circle"},
                 {"label": "Ingreso Real",       "url": "reportes.ingreso_real",     "icono": "bi-cash-stack"},
