@@ -16,13 +16,14 @@ def lista_volantes():
     id_programa = request.args.get('id_programa', '')
 
     sql = """
-        SELECT vm.id_volante, vm.fecha_gen, vm.val_tot, vm.semestre, vm.modalidad,
+        SELECT vm.id_volante, cc.fecha_creacion AS fecha_gen, vm.val_tot, vm.semestre, vm.modalidad,
                e.nombres, e.apellidos, e.num_doc,
                pa.nombre AS nom_periodo,
                p.nombre  AS nom_programa, p.codigo AS cod_programa
         FROM volante_matricula vm
-        JOIN estudiante        e  ON vm.id_estu = e.id_estudiante
-        JOIN periodo_academico pa ON vm.id_per  = pa.id_periodo
+        JOIN cuenta_corriente  cc ON vm.id_cuenta = cc.id_cuenta
+        JOIN estudiante        e  ON cc.id_estudiante = e.id_estudiante
+        JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo
         JOIN programa          p  ON vm.id_prog = p.id_programa
         WHERE 1=1
     """
@@ -33,7 +34,7 @@ def lista_volantes():
     if id_programa:
         sql += " AND vm.id_prog = %s"
         params.append(id_programa)
-    sql += " ORDER BY vm.fecha_gen DESC"
+    sql += " ORDER BY cc.fecha_creacion DESC"
 
     volantes  = ejecutar_consulta(sql, params, fetch=True)
     periodos  = ejecutar_consulta(

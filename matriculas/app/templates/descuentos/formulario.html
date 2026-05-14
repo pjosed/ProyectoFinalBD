@@ -1,0 +1,272 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Aplicar Descuento — {{ estudiante.apellidos }}, {{ estudiante.nombres }}{% endblock %}
+
+{% block estilos_extra %}
+<style>
+    .card-periodo {
+        cursor: pointer;
+        border: 2px solid #dee2e6 !important;
+        transition: border-color .15s, background .15s;
+    }
+    .card-periodo:hover { border-color: #0d6efd !important; }
+    .card-periodo.seleccionado { border-color: #0d6efd !important; background-color: #e7f1ff; }
+
+    .card-pct {
+        cursor: pointer;
+        border: 2px solid #dee2e6 !important;
+        transition: border-color .15s, background .15s;
+        min-width: 72px;
+        text-align: center;
+    }
+    .card-pct:hover { border-color: #198754 !important; }
+    .card-pct.seleccionado { border-color: #198754 !important; background-color: #d1e7dd; }
+
+    .preview-box {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h4 mb-0"><i class="bi-tag-fill me-2 text-primary"></i>Aplicar Descuento / Beca</h2>
+        <small class="text-muted">
+            <i class="bi-person me-1"></i>
+            {{ estudiante.apellidos }}, {{ estudiante.nombres }} &nbsp;|&nbsp;
+            {{ estudiante.tipo_doc }}: {{ estudiante.num_doc }}
+        </small>
+    </div>
+    <a href="{{ url_for('descuentos.buscar') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <!-- ══════════════════════════════════════════════
+         COLUMNA IZQUIERDA — Formulario
+    ══════════════════════════════════════════════ -->
+    <div class="col-lg-7">
+        <form method="POST" action="{{ url_for('descuentos.aplicar', id_estudiante=estudiante.id_estudiante) }}" id="frmDescuento">
+
+            <!-- 1. Selección de periodo -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold"><i class="bi-calendar3 me-2"></i>1. Seleccionar Periodo</div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% for p in periodos %}
+                        <div class="col-12">
+                            <div class="card-periodo rounded p-3 d-flex justify-content-between align-items-center"
+                                 id="card_periodo_{{ loop.index }}"
+                                 onclick="seleccionarPeriodo(this, '{{ p.id_periodo }}', {{ p.saldo | default(0) }}, '{{ p.nom_periodo }}')">
+                                <div>
+                                    <div class="fw-semibold">{{ p.nom_periodo }}</div>
+                                    <small class="text-muted">{{ p.fecha_inicio }} — {{ p.fecha_fin }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Saldo pendiente</div>
+                                    <div class="fw-bold text-danger fs-6">${{ "{:,.0f}".format(p.saldo | default(0)) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="id_periodo" id="id_periodo" required>
+                </div>
+            </div>
+
+            <!-- 2. Tipo de beca -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold"><i class="bi-award me-2"></i>2. Tipo de Beca / Descuento</div>
+                <div class="card-body">
+                    <select name="id_tipo" id="selTipo" class="form-select" required
+                            onchange="actualizarPorcentajeBeca()">
+                        <option value="">— Seleccione una beca —</option>
+                        {% for t in tipos_descuento %}
+                        <option value="{{ t.id_tipo }}" data-pct="{{ t.porcentaje }}">
+                            {{ t.nombre }} ({{ t.porcentaje | int }}%)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3. Porcentaje de descuento -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold"><i class="bi-percent me-2"></i>3. Porcentaje de Descuento</div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for pct in [10, 20, 25, 50, 100] %}
+                        <div class="card-pct rounded py-2 px-3"
+                             id="card_pct_{{ pct }}"
+                             onclick="seleccionarPct(this, {{ pct }})">
+                            <div class="fw-bold fs-5">{{ pct }}%</div>
+                            <div class="small text-muted">descuento</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="porcentaje" id="porcentaje" required>
+                    <div class="form-text mt-2">
+                        <i class="bi-info-circle me-1"></i>
+                        El tipo de beca pre-selecciona el porcentaje, pero puede ajustarlo.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Observación -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold"><i class="bi-chat-left-text me-2"></i>4. Observación</div>
+                <div class="card-body">
+                    <textarea name="observacion" class="form-control" rows="2"
+                              placeholder="Justificación del descuento (opcional)..."
+                              maxlength="255"></textarea>
+                </div>
+            </div>
+
+            <!-- Vista previa dinámica -->
+            <div class="preview-box p-4 mb-4">
+                <div class="small text-white-50 mb-2"><i class="bi-eye me-1"></i>Vista previa del descuento</div>
+                <div class="row text-center g-3">
+                    <div class="col-4">
+                        <div class="small text-white-50">Saldo actual</div>
+                        <div class="fs-5 fw-bold text-white" id="prev_saldo">—</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-white-50">Valor a descontar</div>
+                        <div class="fs-5 fw-bold text-warning" id="prev_descuento">—</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-white-50">Saldo resultante</div>
+                        <div class="fs-5 fw-bold text-success" id="prev_resultante">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" id="btnAplicar" disabled>
+                    <i class="bi-tag-fill me-1"></i>Aplicar Descuento
+                </button>
+                <a href="{{ url_for('descuentos.buscar') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         COLUMNA DERECHA — Descuentos ya aplicados
+    ══════════════════════════════════════════════ -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header fw-semibold bg-light">
+                <i class="bi-clock-history me-2"></i>Descuentos aplicados a esta cuenta
+            </div>
+            <div class="card-body p-0">
+                {% if descuentos_aplicados %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Beca</th>
+                                <th class="text-center">%</th>
+                                <th class="text-end pe-3">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in descuentos_aplicados %}
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="small fw-semibold">{{ d.nombre_tipo }}</div>
+                                    <div class="text-muted" style="font-size:.75rem;">{{ d.nom_periodo }}</div>
+                                    <div class="text-muted" style="font-size:.7rem;">{{ d.fecha_aplicacion.strftime('%d/%m/%Y') if d.fecha_aplicacion else '—' }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info text-dark">{{ d.porcentaje | int }}%</span>
+                                </td>
+                                <td class="text-end pe-3 fw-bold text-success">
+                                    -${{ "{:,.0f}".format(d.valor_descuento) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="2" class="ps-3 fw-semibold">Total descontado</td>
+                                <td class="text-end pe-3 fw-bold text-success">
+                                    -${{ "{:,.0f}".format(descuentos_aplicados | sum(attribute='valor_descuento')) }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi-tag display-3 d-block mb-3 opacity-25"></i>
+                    <p class="mb-0 small">No hay descuentos aplicados aún.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    let saldoActual = 0;
+    let porcentajeActual = 0;
+
+    function seleccionarPeriodo(el, id, saldo, nombre) {
+        document.querySelectorAll('.card-periodo').forEach(c => c.classList.remove('seleccionado'));
+        el.classList.add('seleccionado');
+        document.getElementById('id_periodo').value = id;
+        saldoActual = saldo;
+        actualizarPreview();
+    }
+
+    function seleccionarPct(el, pct) {
+        document.querySelectorAll('.card-pct').forEach(c => c.classList.remove('seleccionado'));
+        el.classList.add('seleccionado');
+        document.getElementById('porcentaje').value = pct;
+        porcentajeActual = pct;
+        actualizarPreview();
+    }
+
+    function actualizarPorcentajeBeca() {
+        const sel = document.getElementById('selTipo');
+        const opt = sel.options[sel.selectedIndex];
+        if (opt && opt.dataset.pct) {
+            const pct = parseFloat(opt.dataset.pct);
+            seleccionarPct(document.getElementById('card_pct_' + Math.round(pct)), pct);
+        }
+    }
+
+    function fmt(n) {
+        return '$' + Math.round(n).toLocaleString('es-CO');
+    }
+
+    function actualizarPreview() {
+        const btnAplicar = document.getElementById('btnAplicar');
+        const idPeriodo  = document.getElementById('id_periodo').value;
+        const pct        = parseFloat(document.getElementById('porcentaje').value) || 0;
+
+        if (idPeriodo && pct > 0 && saldoActual > 0) {
+            const descuento   = saldoActual * pct / 100;
+            const resultante  = Math.max(0, saldoActual - descuento);
+
+            document.getElementById('prev_saldo').textContent       = fmt(saldoActual);
+            document.getElementById('prev_descuento').textContent   = fmt(descuento);
+            document.getElementById('prev_resultante').textContent  = fmt(resultante);
+            btnAplicar.disabled = false;
+        } else {
+            document.getElementById('prev_saldo').textContent      = '—';
+            document.getElementById('prev_descuento').textContent  = '—';
+            document.getElementById('prev_resultante').textContent = '—';
+            btnAplicar.disabled = true;
+        }
+    }
+</script>
+{% endblock %}

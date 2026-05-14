@@ -61,4 +61,16 @@ def create_app():
     from app.reportes import reportes_bp
     app.register_blueprint(reportes_bp, url_prefix="/reportes")
 
+
+    # Blueprint de Descuentos y Becas
+    from app.descuentos import descuentos_bp
+    app.register_blueprint(descuentos_bp, url_prefix="/descuentos")
+ 
+    # Blueprint de Cuenta Corriente (vista detallada por estudiante)
+    from app.cuenta import cuenta_bp
+    app.register_blueprint(cuenta_bp, url_prefix="/cuenta")
+ 
+    # Blueprint de Volante de Matrícula (vista imprimible)
+    from app.volante import volante_bp
+    app.register_blueprint(volante_bp, url_prefix="/volante")
     return app

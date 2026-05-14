@@ -1,0 +1,198 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Cuenta Corriente — {{ cuenta.estudiante }}{% endblock %}
+
+{% block estilos_extra %}
+<style>
+    .badge-cobro { background-color: #dc3545; color: #fff; }
+    .badge-pago  { background-color: #198754; color: #fff; }
+    .fila-total  { background-color: #f8f9fa; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="h4 mb-1">
+            <i class="bi-journal-text me-2 text-primary"></i>Cuenta Corriente
+        </h2>
+        <div class="text-muted">
+            <i class="bi-person me-1"></i>
+            <strong>{{ cuenta.estudiante }}</strong>
+            &nbsp;|&nbsp; {{ cuenta.tipo_doc }}: {{ cuenta.num_doc }}
+        </div>
+    </div>
+    <a href="{{ url_for('cuenta.buscar') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+<!-- Selector de periodo -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-center">
+            <input type="hidden" name="id_cuenta" value="{{ cuenta.id_cuenta }}">
+            <div class="col-auto">
+                <label class="col-form-label fw-semibold">
+                    <i class="bi-calendar3 me-1"></i>Periodo:
+                </label>
+            </div>
+            <div class="col-sm-4">
+                <select name="id_periodo" class="form-select form-select-sm" onchange="this.form.submit()">
+                    {% for p in periodos %}
+                    <option value="{{ p.id_periodo }}"
+                        {% if p.id_periodo == id_periodo_sel %}selected{% endif %}>
+                        {{ p.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-3">
+        <div class="card text-center border-danger border-2">
+            <div class="card-body py-3">
+                <div class="small text-muted mb-1"><i class="bi-arrow-up-circle me-1"></i>Total Cobros</div>
+                <div class="fs-4 fw-bold text-danger">${{ "{:,.0f}".format(total_cobros) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card text-center border-success border-2">
+            <div class="card-body py-3">
+                <div class="small text-muted mb-1"><i class="bi-arrow-down-circle me-1"></i>Total Pagos</div>
+                <div class="fs-4 fw-bold text-success">${{ "{:,.0f}".format(total_pagos) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card text-center border-2 {% if saldo_pendiente > 0 %}border-warning{% else %}border-success{% endif %}">
+            <div class="card-body py-3">
+                <div class="small text-muted mb-1"><i class="bi-wallet2 me-1"></i>Saldo Pendiente</div>
+                <div class="fs-4 fw-bold {% if saldo_pendiente > 0 %}text-danger{% else %}text-success{% endif %}">
+                    ${{ "{:,.0f}".format(saldo_pendiente) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card text-center border-2 {% if estado == 'PENDIENTE' %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-body py-3">
+                <div class="small text-muted mb-1"><i class="bi-flag me-1"></i>Estado</div>
+                {% if estado == 'PENDIENTE' %}
+                <span class="badge bg-danger fs-6 mt-1">PENDIENTE</span>
+                {% else %}
+                <span class="badge bg-success fs-6 mt-1">BALANCEADO</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Franja de verificación de balance -->
+<div class="card mb-4 border-0 {% if diferencia == 0 %}bg-success{% else %}bg-danger{% endif %} bg-opacity-10">
+    <div class="card-body py-2 d-flex align-items-center gap-3">
+        <span class="fw-semibold">Verificación de balance:</span>
+        <code class="fs-6">
+            ${{ "{:,.0f}".format(total_cobros) }} (COBROS)
+            − ${{ "{:,.0f}".format(total_pagos) }} (PAGOS)
+            = ${{ "{:,.0f}".format(saldo_pendiente) }} (SALDO)
+        </code>
+        {% if diferencia == 0 %}
+        <span class="badge bg-success ms-auto fs-6"><i class="bi-check-lg me-1"></i>✓ Cuadra</span>
+        {% else %}
+        <span class="badge bg-danger ms-auto fs-6"><i class="bi-x-lg me-1"></i>✗ No cuadra (Δ ${{ "{:,.0f}".format(diferencia | abs) }})</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabla de movimientos -->
+<div class="card mb-4">
+    <div class="card-header fw-semibold d-flex justify-content-between">
+        <span><i class="bi-list-ul me-2"></i>Movimientos del periodo</span>
+        <span class="badge bg-secondary">{{ movimientos | length }} registros</span>
+    </div>
+    <div class="card-body p-0">
+        {% if movimientos %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Fecha</th>
+                        <th>Movimiento</th>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-end">Saldo acum.</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movimientos %}
+                    <tr>
+                        <td class="ps-3 small">{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '—' }}</td>
+                        <td class="small">{{ m.movimiento }}</td>
+                        <td>
+                            <span class="badge {% if m.tipo == 'COBRO' %}badge-cobro{% else %}badge-pago{% endif %}">
+                                {{ m.codigo }}
+                            </span>
+                        </td>
+                        <td class="small">{{ m.tipo }}</td>
+                        <td class="text-end fw-semibold {% if m.tipo == 'COBRO' %}text-danger{% else %}text-success{% endif %}">
+                            {% if m.tipo == 'COBRO' %}+{% else %}−{% endif %}${{ "{:,.0f}".format(m.valor | abs) }}
+                        </td>
+                        <td class="text-end fw-bold {% if m.saldo_acumulado > 0 %}text-danger{% else %}text-success{% endif %}">
+                            ${{ "{:,.0f}".format(m.saldo_acumulado) }}
+                        </td>
+                        <td class="small text-muted">{{ m.observacion | default('—') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="fila-total">
+                        <td colspan="4" class="ps-3">TOTALES</td>
+                        <td class="text-end text-danger">+${{ "{:,.0f}".format(total_cobros) }}</td>
+                        <td class="text-end {% if saldo_pendiente > 0 %}text-danger{% else %}text-success{% endif %}">
+                            ${{ "{:,.0f}".format(saldo_pendiente) }}
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi-inbox display-4 d-block mb-3 opacity-25"></i>
+            <p class="mb-0">No hay movimientos registrados para este periodo.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Botones contextuales -->
+<div class="d-flex flex-wrap gap-2">
+    {% if saldo_pendiente > 0 %}
+    <a href="{{ url_for('pagos.pse_paso1', id_cuenta=cuenta.id_cuenta) }}" class="btn btn-primary">
+        <i class="bi-credit-card-2-front me-1"></i>Pagar PSE
+    </a>
+    <a href="{{ url_for('pagos.pago_caja', id_cuenta=cuenta.id_cuenta) }}" class="btn btn-danger">
+        <i class="bi-cash-coin me-1"></i>Pagar por caja
+    </a>
+    {% endif %}
+
+    {% if session.get('rol') in ['ADMINISTRADOR', 'SUPERVISOR'] %}
+    <a href="{{ url_for('descuentos.formulario', id_estudiante=cuenta.id_estudiante) }}" class="btn btn-outline-info">
+        <i class="bi-tag me-1"></i>Aplicar descuento
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('volante.volante', id_cuenta=cuenta.id_cuenta) }}" class="btn btn-outline-secondary">
+        <i class="bi-file-earmark-text me-1"></i>Ver volante
+    </a>
+</div>
+{% endblock %}

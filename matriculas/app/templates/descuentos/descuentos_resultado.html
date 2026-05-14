@@ -1,0 +1,130 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Descuento Aplicado — {{ cuenta.estudiante }}{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado de éxito -->
+<div class="card border-0 mb-4" style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;border-radius:14px;">
+    <div class="card-body py-4 text-center">
+        <i class="bi-patch-check-fill display-3 d-block mb-3"></i>
+        <h3 class="fw-bold mb-1">¡Descuento aplicado con éxito!</h3>
+        <p class="mb-0 opacity-75">
+            El descuento fue registrado correctamente para
+            <strong>{{ cuenta.estudiante }}</strong>
+            en el periodo <strong>{{ cuenta.periodo }}</strong>.
+        </p>
+    </div>
+</div>
+
+<!-- Resumen financiero de la cuenta -->
+<div class="card mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi-wallet2 me-2"></i>Resumen de la Cuenta
+    </div>
+    <div class="card-body">
+        <div class="row g-3 text-center">
+            <div class="col-sm-3">
+                <div class="small text-muted mb-1">Total Cobros</div>
+                <div class="fs-5 fw-bold text-danger">${{ "{:,.0f}".format(cuenta.total_cobros) }}</div>
+            </div>
+            <div class="col-sm-3">
+                <div class="small text-muted mb-1">Total Descuentos</div>
+                <div class="fs-5 fw-bold text-info">-${{ "{:,.0f}".format(cuenta.total_descuentos | default(0)) }}</div>
+            </div>
+            <div class="col-sm-3">
+                <div class="small text-muted mb-1">Total Pagos</div>
+                <div class="fs-5 fw-bold text-success">-${{ "{:,.0f}".format(cuenta.total_pagos) }}</div>
+            </div>
+            <div class="col-sm-3">
+                <div class="small text-muted mb-1">Saldo Pendiente</div>
+                {% if cuenta.saldo_pendiente > 0 %}
+                <div class="fs-5 fw-bold text-danger">${{ "{:,.0f}".format(cuenta.saldo_pendiente) }}</div>
+                {% else %}
+                <div class="fs-5 fw-bold text-success">${{ "{:,.0f}".format(cuenta.saldo_pendiente) }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <hr class="my-3">
+        <div class="text-center">
+            <span class="fw-semibold me-2">Estado:</span>
+            {% if cuenta.estado == 'PENDIENTE' %}
+            <span class="badge bg-danger fs-6">
+                <i class="bi-exclamation-triangle me-1"></i>PENDIENTE
+            </span>
+            {% else %}
+            <span class="badge bg-success fs-6">
+                <i class="bi-check-circle me-1"></i>BALANCEADO
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de descuentos aplicados en el periodo -->
+<div class="card mb-4">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi-tags me-2"></i>Descuentos aplicados en este periodo</span>
+        <span class="badge bg-secondary">{{ descuentos | length }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if descuentos %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Tipo de Beca</th>
+                        <th class="text-center">Porcentaje</th>
+                        <th class="text-end">Valor descontado</th>
+                        <th>Observación</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in descuentos %}
+                    <tr {% if loop.last %}class="table-success fw-semibold"{% endif %}>
+                        <td class="ps-4">{{ d.nombre_tipo }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-info text-dark fs-6">{{ d.porcentaje | int }}%</span>
+                        </td>
+                        <td class="text-end fw-bold text-success">
+                            -${{ "{:,.0f}".format(d.valor_descuento) }}
+                        </td>
+                        <td class="text-muted small">{{ d.observacion | default('—') }}</td>
+                        <td class="small">
+                            {{ d.fecha_aplicacion.strftime('%d/%m/%Y %H:%M') if d.fecha_aplicacion else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="2" class="ps-4">Total descontado en el periodo</td>
+                        <td class="text-end text-success">
+                            -${{ "{:,.0f}".format(descuentos | sum(attribute='valor_descuento')) }}
+                        </td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">No hay descuentos registrados.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Acciones -->
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('descuentos.formulario', id_estudiante=cuenta.id_estudiante) }}"
+       class="btn btn-outline-primary">
+        <i class="bi-plus-circle me-1"></i>Aplicar otro descuento
+    </a>
+    <a href="{{ url_for('cuenta.cuenta_corriente', id_cuenta=cuenta.id_cuenta) }}"
+       class="btn btn-outline-secondary">
+        <i class="bi-journal-text me-1"></i>Ver cuenta corriente
+    </a>
+    <a href="{{ url_for('descuentos.buscar') }}" class="btn btn-outline-secondary">
+        <i class="bi-arrow-left me-1"></i>Nueva búsqueda
+    </a>
+</div>
+{% endblock %}

@@ -41,6 +41,15 @@ MENUS_POR_ROL = {
             ],
         },
         {
+            "seccion": "Finanzas",
+            "icono": "bi-cash-stack",
+            "opciones": [
+                {"label": "Descuentos y Becas",   "url": "descuentos.buscar",  "icono": "bi-tag-fill"},
+                {"label": "Ver Cuenta Corriente", "url": "cuenta.buscar",      "icono": "bi-journal-text"},
+                {"label": "Volante de Matrícula", "url": "volante.buscar",     "icono": "bi-file-earmark-text"},
+            ],
+        },
+        {
             "seccion": "Reportes",
             "icono": "bi-bar-chart",
             "opciones": [
@@ -69,6 +78,15 @@ MENUS_POR_ROL = {
                 {"label": "Gestionar Estudiantes", "url": "estudiantes.lista_estudiantes", "icono": "bi-person-lines-fill"},
             ],
         },
+        {
+            "seccion": "Finanzas",
+            "icono": "bi-cash-stack",
+            "opciones": [
+                {"label": "Descuentos y Becas",   "url": "descuentos.buscar", "icono": "bi-tag-fill"},
+                {"label": "Ver Cuenta Corriente", "url": "cuenta.buscar",     "icono": "bi-journal-text"},
+                {"label": "Volante de Matrícula", "url": "volante.buscar",    "icono": "bi-file-earmark-text"},
+            ],
+        },
     ],
     "ASISTENTE": [
         {
@@ -79,6 +97,14 @@ MENUS_POR_ROL = {
                 {"label": "Generación Masiva",        "url": "volantes.volante_masivo", "icono": "bi-people-fill"},
                 {"label": "Cuenta Corriente",         "url": "cuentas.lista_cuentas", "icono": "bi-wallet2"},
                 {"label": "Simular Pago",             "url": "cuentas.lista_cuentas", "icono": "bi-credit-card-2-front"},
+            ],
+        },
+        {
+            "seccion": "Finanzas",
+            "icono": "bi-cash-stack",
+            "opciones": [
+                {"label": "Ver Cuenta Corriente", "url": "cuenta.buscar",    "icono": "bi-journal-text"},
+                {"label": "Volante de Matrícula", "url": "volante.buscar",   "icono": "bi-file-earmark-text"},
             ],
         },
     ],

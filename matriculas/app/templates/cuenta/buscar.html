@@ -1,0 +1,111 @@
+{% extends 'shared/base.html' %}
+
+{% block titulo %}Buscar Estudiante — Cuenta Corriente{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">
+        <i class="bi-journal-text me-2 text-primary"></i>Cuenta Corriente
+    </h2>
+</div>
+
+<!-- Card de búsqueda -->
+<div class="card mb-4">
+    <div class="card-header fw-semibold bg-primary text-white">
+        <i class="bi-search me-2"></i>Buscar Estudiante
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('cuenta.buscar') }}" class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label">Nombre, documento o código del estudiante</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi-person-search"></i></span>
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        placeholder="Ej: María López, 9876543210, EST-002..."
+                        value="{{ q | default('') }}"
+                        autofocus
+                    >
+                </div>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi-search me-1"></i>Buscar
+                </button>
+                {% if q %}
+                <a href="{{ url_for('cuenta.buscar') }}" class="btn btn-outline-secondary">
+                    <i class="bi-x-lg"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resultados -->
+{% if q is defined and q %}
+<div class="card">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi-people me-2"></i>Resultados de búsqueda</span>
+        {% if estudiantes %}
+        <span class="badge bg-secondary">{{ estudiantes | length }} encontrado(s)</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if estudiantes %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Nombre completo</th>
+                        <th>Documento</th>
+                        <th>Programa</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for est in estudiantes %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-semibold">{{ est.apellidos }}, {{ est.nombres }}</div>
+                            <div class="text-muted small">Cód. {{ est.codigo | default('—') }}</div>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ est.tipo_doc }}</span><br>
+                            <span class="fw-semibold">{{ est.num_doc }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi-mortarboard me-1"></i>{{ est.programa | default('—') }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('cuenta.cuenta_corriente', id_cuenta=est.id_cuenta) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi-journal-text me-1"></i>Ver cuenta
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi-person-x display-4 d-block mb-3"></i>
+            <p class="mb-0">No se encontraron estudiantes para "<strong>{{ q }}</strong>".</p>
+            <small>Intente con otro nombre, documento o código.</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi-journal-text display-4 d-block mb-3 text-primary opacity-25"></i>
+    <p class="mb-1 fw-semibold">Ingrese un término de búsqueda</p>
+    <small>Puede buscar por nombre, número de documento o código de estudiante.</small>
+</div>
+{% endif %}
+{% endblock %}
