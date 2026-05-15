@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
 from app.cuentas import cuentas_bp
 from app.auth.routes import login_requerido, rol_requerido
 from config.database import ejecutar_consulta, ejecutar_uno
@@ -97,6 +97,15 @@ def detalle_cuenta(id_cuenta):
         (id_cuenta,), fetch=True
     ) or []
 
+    # Códigos de cobro adicional (excluye PMAT que se genera automáticamente)
+    codigos_cobro = ejecutar_consulta(
+        """SELECT id_codigo, codigo, descripcion
+           FROM codigo_detalle
+           WHERE grupo = 'COBRO' AND codigo != 'PMAT'
+           ORDER BY codigo""",
+        fetch=True
+    ) or []
+
     total_cobros = sum(float(m['monto']) for m in movimientos if m['grupo'] == 'COBRO')
     total_pagos  = sum(float(p['monto']) for p in pagos)
     saldo        = total_cobros - total_pagos
@@ -105,6 +114,47 @@ def detalle_cuenta(id_cuenta):
                            cuenta=cuenta,
                            movimientos=movimientos,
                            pagos=pagos,
+                           codigos_cobro=codigos_cobro,
                            total_cobros=total_cobros,
                            total_pagos=total_pagos,
                            saldo=saldo)
+
+
+# ─── Agregar cobro adicional ──────────────────────────────────────────────────
+
+@cuentas_bp.route('/<int:id_cuenta>/agregar-cobro', methods=['POST'])
+@login_requerido
+@rol_requerido('ADMINISTRADOR', 'ASISTENTE')
+def agregar_cobro(id_cuenta):
+    id_codigo = request.form.get('id_codigo')
+    monto     = request.form.get('monto', '').strip()
+    descrip   = request.form.get('descrip', '').strip()
+    id_usuario = session['usuario_id']
+
+    if not id_codigo or not monto:
+        flash('Debe seleccionar un concepto e ingresar el monto.', 'warning')
+        return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+
+    try:
+        monto = float(monto)
+        if monto <= 0:
+            raise ValueError
+    except ValueError:
+        flash('El monto debe ser un número mayor a cero.', 'warning')
+        return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+
+    # Obtener descripción del código si no se ingresó una
+    if not descrip:
+        cod = ejecutar_uno(
+            "SELECT descripcion FROM codigo_detalle WHERE id_codigo = %s",
+            (id_codigo,)
+        )
+        descrip = cod['descripcion'] if cod else 'Cobro adicional'
+
+    ejecutar_consulta(
+        """INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
+           VALUES (%s, %s, %s, %s, NOW(), %s)""",
+        (id_cuenta, id_codigo, descrip, monto, id_usuario)
+    )
+    flash('Cobro adicional registrado correctamente.', 'success')
+    return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))

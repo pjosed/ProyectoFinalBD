@@ -226,3 +226,40 @@ def usuario_reenviar_clave(id_usuario):
         flash(f"No se pudo enviar el correo. Contraseña temporal: {contrasena}", "warning")
 
     return redirect(url_for("admin.usuarios_lista"))
+
+@admin_bp.route("/usuarios/<int:id_usuario>/editar", methods=["GET", "POST"])
+@rol_requerido("ADMINISTRADOR")
+def usuario_editar(id_usuario):
+    datos = ejecutar_uno(
+        """SELECT u.id_usuario, u.username AS nombre_usuario, u.id_rol,
+                  p.nombres AS nombre, p.apellidos AS apellido,
+                  p.email AS correo, p.telefono, p.id_persona
+           FROM usuario u JOIN persona p ON u.id_persona = p.id_persona
+           WHERE u.id_usuario = %s""",
+        (id_usuario,)
+    )
+    if not datos:
+        flash("Usuario no encontrado.", "danger")
+        return redirect(url_for("admin.usuarios_lista"))
+
+    roles = ejecutar_consulta("SELECT id_rol, nombre FROM rol ORDER BY nombre", fetch=True)
+
+    if request.method == "POST":
+        nombre   = request.form.get("nombre", "").strip()
+        apellido = request.form.get("apellido", "").strip()
+        correo   = request.form.get("correo", "").strip().lower()
+        telefono = request.form.get("telefono", "").strip()
+        id_rol   = request.form.get("id_rol")
+
+        ejecutar_consulta(
+            "UPDATE persona SET nombres=%s, apellidos=%s, email=%s, telefono=%s WHERE id_persona=%s",
+            (nombre, apellido, correo, telefono or None, datos["id_persona"])
+        )
+        ejecutar_consulta(
+            "UPDATE usuario SET id_rol=%s WHERE id_usuario=%s",
+            (id_rol, id_usuario)
+        )
+        flash(f"Usuario '{datos['nombre_usuario']}' actualizado correctamente.", "success")
+        return redirect(url_for("admin.usuarios_lista"))
+
+    return render_template("admin/usuario_editar.html", usuario=datos, roles=roles)

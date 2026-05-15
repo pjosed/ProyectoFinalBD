@@ -43,6 +43,12 @@
                 </td>
                 <td class="text-center">
                     <div class="d-flex gap-1 justify-content-center">
+                        <!-- Editar correo -->
+                        <a href="{{ url_for('admin.usuario_editar', id_usuario=u.id_usuario) }}"
+                           class="btn btn-sm btn-outline-primary" title="Editar datos">
+                            <i class="bi-pencil"></i>
+                        </a>
+                        <!-- Activar / Desactivar -->
                         <form method="POST"
                               action="{{ url_for('admin.usuario_toggle', id_usuario=u.id_usuario) }}"
                               onsubmit="return confirm('¿Confirmas cambiar el estado de este usuario?')">
@@ -51,6 +57,7 @@
                                 <i class="bi-{% if u.activo %}person-x{% else %}person-check{% endif %}"></i>
                             </button>
                         </form>
+                        <!-- Reenviar contraseña -->
                         <form method="POST"
                               action="{{ url_for('admin.usuario_reenviar_clave', id_usuario=u.id_usuario) }}"
                               onsubmit="return confirm('¿Generar nueva contraseña y enviarla por correo?')">
@@ -71,3 +78,4 @@
     </div>
 </div>
 {% endblock %}
+

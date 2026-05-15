@@ -77,9 +77,48 @@
     <!-- Movimientos (cobros) -->
     <div class="col-md-7">
         <div class="card">
-            <div class="card-header fw-semibold">
-                <i class="bi-arrow-up-circle text-danger me-2"></i>Movimientos de Cobro
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi-arrow-up-circle text-danger me-2"></i>Movimientos de Cobro</span>
+                <button class="btn btn-sm btn-outline-danger" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#formCobroAdicional">
+                    <i class="bi-plus-circle me-1"></i>Cobro adicional
+                </button>
             </div>
+
+            <!-- Formulario cobro adicional (colapsable) -->
+            <div class="collapse" id="formCobroAdicional">
+                <div class="card-body border-bottom bg-light">
+                    <form method="POST" action="{{ url_for('cuentas.agregar_cobro', id_cuenta=cuenta.id_cuenta) }}">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label small mb-1">Concepto <span class="text-danger">*</span></label>
+                                <select name="id_codigo" class="form-select form-select-sm" required>
+                                    <option value="">— Seleccione —</option>
+                                    {% for c in codigos_cobro %}
+                                    <option value="{{ c.id_codigo }}">{{ c.codigo }} — {{ c.descripcion }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small mb-1">Monto <span class="text-danger">*</span></label>
+                                <input type="number" name="monto" class="form-control form-control-sm"
+                                       placeholder="0" min="1" step="1000" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small mb-1">Descripción</label>
+                                <input type="text" name="descrip" class="form-control form-control-sm"
+                                       placeholder="Opcional">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-sm btn-danger w-100">
+                                    <i class="bi-plus-circle me-1"></i>Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="card-body p-0">
                 <table class="table table-sm mb-0">
                     <thead class="table-light">

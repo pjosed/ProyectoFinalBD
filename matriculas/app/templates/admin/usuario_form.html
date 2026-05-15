@@ -10,88 +10,50 @@
     <div class="card-body p-4">
         <form method="POST">
 
-            <h6 class="fw-semibold text-primary mb-3">1. Seleccionar persona</h6>
+            <input type="hidden" name="accion" value="nueva">
 
-            <ul class="nav nav-tabs mb-3" id="personaTabs">
-                <li class="nav-item">
-                    <button class="nav-link active" type="button"
-                            onclick="seleccionarTab('existente')">
-                        Persona existente
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" type="button"
-                            onclick="seleccionarTab('nueva')">
-                        Crear nueva persona
-                    </button>
-                </li>
-            </ul>
-
-            <input type="hidden" name="accion" id="accion" value="existente">
-
-            <!-- Panel: persona existente -->
-            <div id="panel-existente">
-                <div class="mb-3">
-                    <label class="form-label">Persona</label>
-                    <select name="id_persona" class="form-select">
-                        <option value="">— Selecciona —</option>
-                        {% for p in personas %}
-                        <option value="{{ p.id_persona }}">
-                            {{ p.apellido }}, {{ p.nombre }} — {{ p.correo }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    {% if not personas %}
-                    <div class="form-text text-warning">
-                        Todas las personas ya tienen usuario asignado.
-                    </div>
-                    {% endif %}
+            <!-- PASO 1: Datos de la persona -->
+            <h6 class="fw-semibold text-primary mb-3">1. Datos personales</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Nombre" required>
                 </div>
-            </div>
-
-            <!-- Panel: nueva persona -->
-            <div id="panel-nueva" style="display:none;">
-                <div class="row g-3 mb-3">
-                    <div class="col-6">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" name="nombre" class="form-control" placeholder="Nombre">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label">Apellido</label>
-                        <input type="text" name="apellido" class="form-control" placeholder="Apellido">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">Tipo de documento</label>
-                        <select name="tipo_doc" class="form-select">
-                            <option value="CC">CC</option>
-                            <option value="CE">CE</option>
-                            <option value="PASAPORTE">Pasaporte</option>
-                        </select>
-                    </div>
-                    <div class="col-8">
-                        <label class="form-label">Número de documento</label>
-                        <input type="text" name="num_doc" class="form-control"
-                               placeholder="Número de documento">
-                    </div>
-                    <div class="col-8">
-                        <label class="form-label">Correo electrónico</label>
-                        <input type="email" name="correo" class="form-control"
-                               placeholder="correo@ejemplo.com">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control" placeholder="300...">
-                    </div>
+                <div class="col-6">
+                    <label class="form-label">Apellido <span class="text-danger">*</span></label>
+                    <input type="text" name="apellido" class="form-control" placeholder="Apellido" required>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Tipo doc.</label>
+                    <select name="tipo_doc" class="form-select">
+                        <option value="CC">CC</option>
+                        <option value="CE">CE</option>
+                        <option value="PASAPORTE">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="col-8">
+                    <label class="form-label">Número de documento <span class="text-danger">*</span></label>
+                    <input type="text" name="num_doc" class="form-control"
+                           placeholder="Número de documento" required>
+                </div>
+                <div class="col-8">
+                    <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                    <input type="email" name="correo" class="form-control"
+                           placeholder="correo@unicaribe.edu.co" required>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control" placeholder="300...">
                 </div>
             </div>
 
             <hr class="my-4">
 
-            <!-- PASO 2: Datos del usuario -->
+            <!-- PASO 2: Datos de acceso -->
             <h6 class="fw-semibold text-primary mb-3">2. Datos de acceso</h6>
             <div class="row g-3">
                 <div class="col-6">
-                    <label class="form-label">Nombre de usuario</label>
+                    <label class="form-label">Nombre de usuario <span class="text-danger">*</span></label>
                     <input type="text" name="nombre_usuario" class="form-control"
                            placeholder="ej: jpeña" required
                            pattern="[a-zA-Z0-9_\.]+"
@@ -99,7 +61,7 @@
                     <div class="form-text">Sin espacios ni caracteres especiales.</div>
                 </div>
                 <div class="col-6">
-                    <label class="form-label">Rol</label>
+                    <label class="form-label">Rol <span class="text-danger">*</span></label>
                     <select name="id_rol" class="form-select" required>
                         <option value="">— Selecciona rol —</option>
                         {% for r in roles %}
@@ -111,13 +73,12 @@
 
             <div class="alert alert-info mt-3 small">
                 <i class="bi-info-circle me-1"></i>
-                La contraseña se genera automáticamente y se envía al correo de la persona.
-                El usuario deberá cambiarla en su primer ingreso.
+                La contraseña se genera automáticamente y se envía al correo registrado.
             </div>
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi-person-check me-1"></i> Crear usuario
+                    <i class="bi-person-check me-1"></i>Crear usuario
                 </button>
                 <a href="{{ url_for('admin.usuarios_lista') }}" class="btn btn-outline-secondary">
                     Cancelar
@@ -126,17 +87,4 @@
         </form>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts_extra %}
-<script>
-function seleccionarTab(tipo) {
-    document.getElementById('accion').value = tipo;
-    document.getElementById('panel-existente').style.display = tipo === 'existente' ? 'block' : 'none';
-    document.getElementById('panel-nueva').style.display     = tipo === 'nueva'     ? 'block' : 'none';
-    document.querySelectorAll('#personaTabs .nav-link').forEach((btn, i) => {
-        btn.classList.toggle('active', (i === 0) === (tipo === 'existente'));
-    });
-}
-</script>
 {% endblock %}

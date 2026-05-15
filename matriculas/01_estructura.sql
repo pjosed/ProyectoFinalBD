@@ -1,8 +1,7 @@
 -- ============================================================
 -- 01_estructura.sql — ESTRUCTURA COMPLETA DE LA BASE DE DATOS
--- Sistema de Matrículas — UniCaribe
 
--- ── Crear / limpiar base de datos ────────────────────────────
+-- ── Crea/limpia la base de datos ────────────────────────────
 DROP DATABASE IF EXISTS matriculas_uni;
 CREATE DATABASE matriculas_uni
     CHARACTER SET utf8mb4
@@ -15,7 +14,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ============================================================
 -- MÓDULO 1: AUTENTICACIÓN Y ROLES
 -- Tablas: rol, persona, usuario
--- ============================================================
 
 CREATE TABLE rol (
     id_rol      INT         NOT NULL AUTO_INCREMENT,
@@ -38,8 +36,6 @@ CREATE TABLE persona (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- La contraseña siempre se guarda hasheada con Werkzeug
--- Columnas según E-R: password, fech_crea
 CREATE TABLE usuario (
     id_usuario  INT          NOT NULL AUTO_INCREMENT,
     id_persona  INT          NOT NULL,
@@ -58,7 +54,6 @@ CREATE TABLE usuario (
 -- ============================================================
 -- MÓDULO 2: OFERTA ACADÉMICA
 -- Tablas: programa_academico, asignatura, plan_estudio
--- ============================================================
 
 -- Nombre según E-R: programa_academico
 -- Columna semestres según E-R: num_sem
@@ -72,7 +67,6 @@ CREATE TABLE programa_academico (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Sin columna creditos (se mueve a plan_estudio según E-R)
 CREATE TABLE asignatura (
     id_asignatura INT          NOT NULL AUTO_INCREMENT,
     codigo        VARCHAR(20)  NOT NULL UNIQUE,
@@ -82,7 +76,6 @@ CREATE TABLE asignatura (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- creditos vive aquí según E-R
 CREATE TABLE plan_estudio (
     id_plan       INT     NOT NULL AUTO_INCREMENT,
     id_programa   INT     NOT NULL,
@@ -99,7 +92,6 @@ CREATE TABLE plan_estudio (
 -- ============================================================
 -- MÓDULO 3: PERIODOS Y REGLAS DE COBRO
 -- Tablas: periodo_academico, regla_cobro, codigo_detalle
--- ============================================================
 
 CREATE TABLE periodo_academico (
     id_periodo  INT         NOT NULL AUTO_INCREMENT,
@@ -111,9 +103,6 @@ CREATE TABLE periodo_academico (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- valor_credito según E-R (no valor_por_credito)
--- modalidad_cobro conservado para que el código Python funcione
--- valor_global y valor_credito pueden ser NULL según modalidad
 CREATE TABLE regla_cobro (
     id_regla        INT           NOT NULL AUTO_INCREMENT,
     id_periodo      INT           NOT NULL,
@@ -128,7 +117,6 @@ CREATE TABLE regla_cobro (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- descripcion según E-R (no nombre separado)
 CREATE TABLE codigo_detalle (
     id_codigo   INT         NOT NULL AUTO_INCREMENT,
     grupo       ENUM('COBRO','PAGO') NOT NULL,
@@ -141,7 +129,6 @@ CREATE TABLE codigo_detalle (
 -- ============================================================
 -- MÓDULO 4: ESTUDIANTES Y MATRÍCULAS
 -- Tablas: estudiante, volante_matricula, volante_asignatura
--- ============================================================
 
 CREATE TABLE estudiante (
     id_estudiante INT          NOT NULL AUTO_INCREMENT,
@@ -156,8 +143,9 @@ CREATE TABLE estudiante (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- id_estu, id_per, id_prog, modalidad, val_tot, fecha_gen según E-R
--- id_cuenta agregado para join con cuenta_corriente (usado en módulos descuentos/volante/cuenta)
+-- id_estu, id_per, id_prog, modalidad, val_tot, fecha_gen 
+-- id_cuenta agregado para join con cuenta_corriente
+
 CREATE TABLE volante_matricula (
     id_volante  INT           NOT NULL AUTO_INCREMENT,
     id_estu     INT           NOT NULL,
@@ -191,10 +179,8 @@ CREATE TABLE volante_asignatura (
 -- ============================================================
 -- MÓDULO 5: CUENTA CORRIENTE Y MOVIMIENTOS
 -- Tablas: cuenta_corriente, movimiento_cuenta, pago
--- ============================================================
 
--- Según E-R: id_cuenta, id_estudiante, id_periodo, fecha_cre
--- Sin columnas denormalizadas (total_cobros, etc.) — se calculan dinámicamente
+
 CREATE TABLE cuenta_corriente (
     id_cuenta     INT      NOT NULL AUTO_INCREMENT,
     id_estudiante INT      NOT NULL,
@@ -207,12 +193,11 @@ CREATE TABLE cuenta_corriente (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Agregar FK de volante_matricula a cuenta_corriente (después de crear la tabla)
+-- Agrega FK de volante_matricula a cuenta_corriente (después de crear la tabla)
 ALTER TABLE volante_matricula
     ADD CONSTRAINT fk_vol_cuenta FOREIGN KEY (id_cuenta) REFERENCES cuenta_corriente(id_cuenta);
 
 
--- Según E-R: id_movimiento, id_cuenta, id_codigo, descrip, monto, fecha, id_usuario
 CREATE TABLE movimiento_cuenta (
     id_movimiento INT           NOT NULL AUTO_INCREMENT,
     id_cuenta     INT           NOT NULL,
@@ -228,7 +213,6 @@ CREATE TABLE movimiento_cuenta (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Según E-R: id_pago, id_cuenta, id_usuario, medio, ref, monto, fecha
 CREATE TABLE pago (
     id_pago   INT           NOT NULL AUTO_INCREMENT,
     id_cuenta INT           NOT NULL,
@@ -246,7 +230,6 @@ CREATE TABLE pago (
 -- ============================================================
 -- MÓDULO 6 (EXTENSIÓN): SIMULACIÓN PSE
 -- Tablas: banco_pse, pago_pse
--- ============================================================
 
 CREATE TABLE banco_pse (
     id_banco INT          NOT NULL AUTO_INCREMENT,
@@ -278,7 +261,6 @@ CREATE TABLE pago_pse (
 -- ============================================================
 -- MÓDULO 7 (EXTENSIÓN): DESCUENTOS Y BECAS
 -- Tablas: tipo_descuento, descuento_aplicado
--- ============================================================
 
 CREATE TABLE tipo_descuento (
     id_tipo     INT           NOT NULL AUTO_INCREMENT,

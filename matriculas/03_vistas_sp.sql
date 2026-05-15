@@ -7,8 +7,7 @@ USE matriculas_uni;
 -- ============================================================
 -- VISTA 1: v_cuenta_corriente_resumen
 -- Muestra el estado financiero de cada cuenta corriente.
--- Los totales se calculan dinámicamente (no columnas guardadas).
--- ============================================================
+
 
 CREATE OR REPLACE VIEW v_cuenta_corriente_resumen AS
 SELECT
@@ -59,7 +58,7 @@ JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo;
 -- VISTA 2: v_movimientos_con_saldo
 -- Movimientos con saldo acumulado fila por fila usando
 -- window functions (MySQL 8+).
--- ============================================================
+
 CREATE OR REPLACE VIEW v_movimientos_con_saldo AS
 SELECT
     mc.id_movimiento,
@@ -91,7 +90,7 @@ JOIN codigo_detalle    cd ON mc.id_codigo  = cd.id_codigo;
 -- ============================================================
 -- VISTA 3: v_volante_detalle
 -- Datos completos del volante para impresión.
--- ============================================================
+
 CREATE OR REPLACE VIEW v_volante_detalle AS
 SELECT
     vm.id_volante,
@@ -126,7 +125,7 @@ LEFT JOIN regla_cobro   rc ON rc.id_periodo  = vm.id_per
 -- ============================================================
 -- VISTA 4: v_descuentos_aplicados
 -- Descuentos registrados con contexto de estudiante y periodo.
--- ============================================================
+
 CREATE OR REPLACE VIEW v_descuentos_aplicados AS
 SELECT
     da.id_descuento,
@@ -152,7 +151,7 @@ ORDER BY da.fecha_aplicacion DESC;
 -- ============================================================
 -- VISTA 5: v_pagos_pse
 -- Transacciones PSE con estado y datos del estudiante.
--- ============================================================
+
 CREATE OR REPLACE VIEW v_pagos_pse AS
 SELECT
     pp.id_pse,
@@ -177,7 +176,7 @@ ORDER BY pp.fecha_transaccion DESC;
 -- ============================================================
 -- STORED PROCEDURE 1: sp_verificar_balance
 -- Verifica que los cobros y pagos cuadren en todas las cuentas.
--- ============================================================
+
 DROP PROCEDURE IF EXISTS sp_verificar_balance;
 
 DELIMITER $$
@@ -229,7 +228,7 @@ DELIMITER ;
 -- STORED PROCEDURE 2: sp_aplicar_descuento
 -- Aplica un descuento porcentual a la cuenta corriente
 -- de un estudiante y registra el movimiento.
--- ============================================================
+
 DROP PROCEDURE IF EXISTS sp_aplicar_descuento;
 
 DELIMITER $$
@@ -330,7 +329,7 @@ DELIMITER ;
 -- ============================================================
 -- STORED PROCEDURE 3: sp_iniciar_pago_pse
 -- Inicia una transacción PSE pendiente de confirmación.
--- ============================================================
+
 DROP PROCEDURE IF EXISTS sp_iniciar_pago_pse;
 
 DELIMITER $$
@@ -382,7 +381,7 @@ DELIMITER ;
 -- ============================================================
 -- STORED PROCEDURE 4: sp_confirmar_pago_pse
 -- Confirma una transacción PSE y registra el pago y movimiento.
--- ============================================================
+
 DROP PROCEDURE IF EXISTS sp_confirmar_pago_pse;
 
 DELIMITER $$
@@ -447,7 +446,7 @@ DELIMITER ;
 -- ============================================================
 -- STORED PROCEDURE 5: sp_cuenta_corriente
 -- Devuelve resumen y movimientos de una cuenta corriente.
--- ============================================================
+
 DROP PROCEDURE IF EXISTS sp_cuenta_corriente;
 
 DELIMITER $$
@@ -520,7 +519,7 @@ DELIMITER ;
 
 -- ============================================================
 -- VERIFICACIÓN FINAL
--- ============================================================
+
 SELECT 'Vistas creadas:' AS info;
 SHOW FULL TABLES WHERE Table_type = 'VIEW';
 
