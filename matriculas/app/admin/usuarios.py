@@ -39,7 +39,8 @@ def _enviar_contrasena(correo, nombre, nombre_usuario, contrasena):
         )
         mail.send(msg)
         return True
-    except Exception:
+    except Exception as e:
+        print(f"ERROR CORREO: {e}")
         return False
 
 

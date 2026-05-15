@@ -96,7 +96,8 @@ def ingreso_esperado():
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
 def pendientes():
-    id_periodo = request.args.get('id_periodo', '')
+    id_periodo  = request.args.get('id_periodo', '')
+    id_programa = request.args.get('id_programa', '')
 
     sql = """
         SELECT e.nombres, e.apellidos, e.num_doc, e.tipo_doc,
@@ -124,18 +125,27 @@ def pendientes():
     if id_periodo:
         sql += " AND cc.id_periodo = %s"
         params.append(id_periodo)
+    if id_programa:
+        sql += " AND vm.id_prog = %s"
+        params.append(id_programa)
     sql += " HAVING (total_cobros - total_pagos) > 0 ORDER BY pa.nombre DESC, e.apellidos"
 
     filas = ejecutar_consulta(sql, params, fetch=True) or []
     for f in filas:
         f['saldo'] = float(f['total_cobros']) - float(f['total_pagos'])
     total_pendiente = sum(f['saldo'] for f in filas)
+    programas = ejecutar_consulta(
+        "SELECT id_programa, nombre FROM programa_academico WHERE activo=1 ORDER BY nombre",
+        fetch=True
+    ) or []
 
     return render_template('reportes/pendientes.html',
                            filas=filas,
                            total_pendiente=total_pendiente,
                            periodos=_get_periodos(),
-                           filtro_periodo=id_periodo)
+                           programas=programas,
+                           filtro_periodo=id_periodo,
+                           filtro_programa=id_programa)
 
 
 # ─── Reporte 4: Ingreso Real ──────────────────────────────────────────────────

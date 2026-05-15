@@ -282,7 +282,7 @@ def volante_nuevo():
 
 @volantes_bp.route('/<int:id_volante>/detalle')
 @login_requerido
-@rol_requerido('ADMINISTRADOR', 'SUPERVISOR', 'ASISTENTE')
+@rol_requerido('ADMINISTRADOR', 'ASISTENTE')
 def detalle_volante(id_volante):
     volante = ejecutar_uno(
         """SELECT vm.*, e.nombres, e.apellidos, e.num_doc, e.tipo_doc,

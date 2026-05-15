@@ -16,7 +16,6 @@ MENUS_POR_ROL = {
             "icono": "bi-shield-lock",
             "opciones": [
                 {"label": "Gestionar Usuarios", "url": "admin.usuarios_lista", "icono": "bi-people"},
-                {"label": "Gestionar Roles", "url": "admin.placeholder", "icono": "bi-person-badge"},
             ],
         },
         {

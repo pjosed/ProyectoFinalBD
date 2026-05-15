@@ -12,11 +12,11 @@
     <div class="card-body py-2">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-sm-4">
-                <label class="form-label small mb-1">Periodo</label>
-                <select name="id_periodo" class="form-select form-select-sm">
-                    <option value="">— Todos los periodos —</option>
-                    {% for p in periodos %}
-                    <option value="{{ p.id_periodo }}" {% if filtro_periodo == p.id_periodo|string %}selected{% endif %}>
+                <label class="form-label small mb-1">Programa</label>
+                <select name="id_programa" class="form-select form-select-sm">
+                    <option value="">— Todos los programas —</option>
+                    {% for p in programas %}
+                    <option value="{{ p.id_programa }}" {% if filtro_programa == p.id_programa|string %}selected{% endif %}>
                         {{ p.nombre }}
                     </option>
                     {% endfor %}
