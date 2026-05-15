@@ -5,8 +5,18 @@ from config.database import ejecutar_consulta
 
 
 def _get_periodos():
+    """Solo periodos que tienen al menos un volante o cuenta corriente generada."""
     return ejecutar_consulta(
-        "SELECT id_periodo, nombre FROM periodo_academico ORDER BY nombre DESC",
+        """
+        SELECT DISTINCT pa.id_periodo, pa.nombre
+        FROM periodo_academico pa
+        WHERE EXISTS (
+            SELECT 1 FROM volante_matricula vm WHERE vm.id_per = pa.id_periodo
+        ) OR EXISTS (
+            SELECT 1 FROM cuenta_corriente cc WHERE cc.id_periodo = pa.id_periodo
+        )
+        ORDER BY pa.nombre DESC
+        """,
         fetch=True
     ) or []
 
@@ -218,8 +228,8 @@ def creditos():
     sql += " GROUP BY vm.id_volante ORDER BY pa.nombre DESC, e.apellidos"
 
     filas          = ejecutar_consulta(sql, params, fetch=True) or []
-    total_valor    = sum(float(f['val_tot'])       for f in filas)
-    total_creditos = sum(int(f['total_creditos'])  for f in filas)
+    total_valor    = sum(float(f['val_tot'])      for f in filas)
+    total_creditos = sum(int(f['total_creditos']) for f in filas)
 
     return render_template('reportes/creditos.html',
                            filas=filas,
@@ -227,5 +237,3 @@ def creditos():
                            total_creditos=total_creditos,
                            periodos=_get_periodos(),
                            filtro_periodo=id_periodo)
-
-

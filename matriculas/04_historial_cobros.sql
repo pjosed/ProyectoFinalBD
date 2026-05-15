@@ -1,37 +1,62 @@
 -- ============================================================
--- 03_historial_cobros.sql — DATOS HISTÓRICOS DE COBROS
+-- 04_historial_cobros.sql — DATOS HISTÓRICOS DE COBROS
 -- Sistema de Matrículas — UniCaribe
 -- Periodos: 2025-1 y 2025-2
 -- ============================================================
 -- INSTRUCCIONES:
---   Ejecutar DESPUÉS de 02_datos_semilla_completo_v2.sql
+--   Ejecutar DESPUÉS de 02_datos_semilla.sql
 --   y DESPUÉS de haber creado el usuario administrador.
+--
+-- DISEÑO:
+--   - Los 20 estudiantes del semilla (1001234501–1001234520)
+--     son los del PERIODO ACTIVO (2026-1). No se tocan aquí.
+--   - Este script inserta 16 estudiantes históricos propios,
+--     con nombres únicos y reales, distribuidos en 2025-1 y 2025-2.
+--   - Cada cuenta_corriente tiene su volante correspondiente.
+--     No hay cuentas huérfanas sin programa.
 -- ============================================================
 
 USE matriculas_uni;
 
 -- ============================================================
--- VARIABLES DE APOYO
--- Usamos subconsultas para obtener IDs dinámicamente
--- así no depende del orden de inserción
+-- ESTUDIANTES HISTÓRICOS (usados solo en este script)
+-- Nombres únicos, distintos a los del semilla
 -- ============================================================
+INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
+    ('CC','1003001001','Alejandro',  'Pedraza Niño',       'apedraza@estudiante.edu.co',    '3201110001'),
+    ('CC','1003001002','Natalia',    'Cifuentes Prada',    'ncifuentes@estudiante.edu.co',  '3201110002'),
+    ('CC','1003001003','Ricardo',    'Palomino Useche',    'rpalomino@estudiante.edu.co',   '3201110003'),
+    ('CC','1003001004','Paola',      'Acosta Barrera',     'pacosta@estudiante.edu.co',     '3201110004'),
+    ('CC','1003001005','Cristian',   'Bohórquez Leal',     'cbohorquez@estudiante.edu.co',  '3201110005'),
+    ('CC','1003001006','Luisa',      'Serrano Palacios',   'lserrano@estudiante.edu.co',    '3201110006'),
+    ('CC','1003001007','Esteban',    'Amaya Contreras',    'eamaya@estudiante.edu.co',      '3201110007'),
+    ('CC','1003001008','Juliana',    'Becerra Pinzón',     'jbecerra@estudiante.edu.co',    '3201110008'),
+    ('CC','1003001009','Héctor',     'Fuentes Alvarado',   'hfuentes@estudiante.edu.co',    '3201110009'),
+    ('CC','1003001010','Marcela',    'Iglesias Buitrago',  'miglesias@estudiante.edu.co',   '3201110010'),
+    ('CC','1003001011','Omar',       'Castellanos Vega',   'ocastellanos@estudiante.edu.co','3201110011'),
+    ('CC','1003001012','Patricia',   'Naranjo Correa',     'pnaranjo@estudiante.edu.co',    '3201110012'),
+    ('CC','1003001013','Germán',     'Suárez Triana',      'gsuarez@estudiante.edu.co',     '3201110013'),
+    ('CC','1003001014','Claudia',    'Rangel Mendoza',     'crangel@estudiante.edu.co',     '3201110014'),
+    ('CC','1003001015','Iván',       'Portilla Sandoval',  'iportilla@estudiante.edu.co',   '3201110015'),
+    ('CC','1003001016','Andrea',     'Solano Villamizar',  'asolano@estudiante.edu.co',     '3201110016');
+
 
 -- ============================================================
 -- PERIODO 2025-1
--- Estudiantes 1-8 con diferentes programas
+-- 8 estudiantes, cada uno con cuenta + volante + cobro + pago
 -- ============================================================
 
 -- Cuentas corrientes 2025-1
 INSERT INTO cuenta_corriente (id_estudiante, id_periodo, fecha_cre)
 SELECT e.id_estudiante, pa.id_periodo, '2025-01-25 08:00:00'
-FROM estudiante e, periodo_academico pa
-WHERE pa.nombre = '2025-1'
-  AND e.num_doc IN (
-    '1001234501','1001234502','1001234503','1001234504',
-    '1001234505','1001234506','1001234507','1001234508'
-  );
+FROM estudiante e
+JOIN periodo_academico pa ON pa.nombre = '2025-1'
+WHERE e.num_doc IN (
+    '1003001001','1003001002','1003001003','1003001004',
+    '1003001005','1003001006','1003001007','1003001008'
+);
 
--- Volantes 2025-1 — modalidad GLOBAL (ADM-EMP, CON-PUB, DER, PSI)
+-- Volantes 2025-1
 INSERT INTO volante_matricula (id_estu, id_per, id_prog, id_usuario, semestre, modalidad, val_tot, fecha_gen, id_cuenta)
 SELECT
     e.id_estudiante, pa.id_periodo, prog.id_programa,
@@ -39,84 +64,99 @@ SELECT
     rc.valor_global, '2025-01-25 09:00:00',
     cc.id_cuenta
 FROM estudiante e
-JOIN periodo_academico pa ON pa.nombre = '2025-1'
-JOIN usuario u ON u.username = 'admin'
+JOIN periodo_academico  pa   ON pa.nombre          = '2025-1'
+JOIN usuario            u    ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
 JOIN (
-    SELECT '1001234501' num_doc, 'ADM-EMP' cod_prog, 1 semestre UNION ALL
-    SELECT '1001234502', 'ADM-EMP', 2 UNION ALL
-    SELECT '1001234503', 'CON-PUB', 1 UNION ALL
-    SELECT '1001234504', 'DER', 1 UNION ALL
-    SELECT '1001234505', 'PSI', 2
+    SELECT '1003001001' num_doc, 'ADM-EMP' cod_prog, 1 semestre UNION ALL
+    SELECT '1003001002', 'CON-PUB', 1                           UNION ALL
+    SELECT '1003001003', 'DER',     1                           UNION ALL
+    SELECT '1003001004', 'PSI',     2                           UNION ALL
+    SELECT '1003001005', 'ADM-EMP', 3                           UNION ALL
+    SELECT '1003001006', 'CON-PUB', 2                           UNION ALL
+    SELECT '1003001007', 'DER',     2                           UNION ALL
+    SELECT '1003001008', 'PSI',     1
 ) t ON e.num_doc = t.num_doc
-JOIN programa_academico prog ON prog.codigo = t.cod_prog
-JOIN regla_cobro rc ON rc.id_periodo = pa.id_periodo AND rc.id_programa = prog.id_programa
-JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante AND cc.id_periodo = pa.id_periodo;
+JOIN programa_academico prog ON prog.codigo         = t.cod_prog
+JOIN regla_cobro        rc   ON rc.id_periodo        = pa.id_periodo
+                             AND rc.id_programa       = prog.id_programa
+JOIN cuenta_corriente   cc   ON cc.id_estudiante     = e.id_estudiante
+                             AND cc.id_periodo         = pa.id_periodo;
 
--- Movimientos COBRO 2025-1 (GLOBAL)
+-- Cobros 2025-1 (movimiento_cuenta PMAT)
 INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
 SELECT
     cc.id_cuenta,
     cd.id_codigo,
-    CONCAT('Matrícula semestre ', vm.semestre, ' — ', pa.nombre),
+    CONCAT('Matrícula semestre ', vm.semestre, ' — 2025-1'),
     vm.val_tot,
-    '2025-01-25 09:30:00',
+    '2025-01-25 10:00:00',
     u.id_usuario
-FROM volante_matricula vm
-JOIN cuenta_corriente cc ON vm.id_cuenta = cc.id_cuenta
-JOIN periodo_academico pa ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-1'
-JOIN codigo_detalle cd ON cd.codigo = 'PMAT' AND cd.grupo = 'COBRO'
-JOIN usuario u ON u.username = 'admin';
+FROM cuenta_corriente   cc
+JOIN volante_matricula  vm  ON vm.id_cuenta  = cc.id_cuenta
+JOIN codigo_detalle     cd  ON cd.codigo     = 'PMAT' AND cd.grupo = 'COBRO'
+JOIN usuario            u   ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
+JOIN periodo_academico  pa  ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-1'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
+WHERE e.num_doc IN (
+    '1003001001','1003001002','1003001003','1003001004',
+    '1003001005','1003001006','1003001007','1003001008'
+);
 
--- Pagos 2025-1 — todos pagaron completo
+-- Pagos completos 2025-1 (todos pagaron)
 INSERT INTO pago (id_cuenta, id_usuario, medio, ref, monto, fecha)
 SELECT
     cc.id_cuenta,
     u.id_usuario,
-    CASE (cc.id_cuenta % 3)
-        WHEN 0 THEN 'PSE'
-        WHEN 1 THEN 'Efectivo'
-        ELSE 'Cheque'
-    END,
-    CONCAT('REF-2025-1-', cc.id_cuenta),
+    'PSE',
+    CONCAT('PSE-2025-1-', e.num_doc),
     vm.val_tot,
-    '2025-02-05 10:00:00'
-FROM cuenta_corriente cc
-JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo AND pa.nombre = '2025-1'
-JOIN volante_matricula vm ON vm.id_cuenta = cc.id_cuenta
-JOIN usuario u ON u.username = 'admin';
+    '2025-02-05 14:00:00'
+FROM cuenta_corriente   cc
+JOIN volante_matricula  vm  ON vm.id_cuenta    = cc.id_cuenta
+JOIN usuario            u   ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
+JOIN periodo_academico  pa  ON pa.id_periodo   = cc.id_periodo AND pa.nombre = '2025-1'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
+WHERE e.num_doc IN (
+    '1003001001','1003001002','1003001003','1003001004',
+    '1003001005','1003001006','1003001007','1003001008'
+);
 
--- Movimientos PAGO 2025-1
+-- Movimiento de pago MPAG 2025-1
 INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
 SELECT
     p.id_cuenta,
     cd.id_codigo,
-    CONCAT('Pago recibido — ', p.medio),
+    'Pago recibido — PSE',
     p.monto,
     p.fecha,
     p.id_usuario
 FROM pago p
-JOIN cuenta_corriente cc ON p.id_cuenta = cc.id_cuenta
-JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo AND pa.nombre = '2025-1'
-JOIN codigo_detalle cd ON cd.codigo = 'MPAG' AND cd.grupo = 'PAGO';
+JOIN codigo_detalle     cd  ON cd.codigo    = 'MPAG' AND cd.grupo = 'PAGO'
+JOIN cuenta_corriente   cc  ON cc.id_cuenta = p.id_cuenta
+JOIN periodo_academico  pa  ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-1'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
+WHERE e.num_doc IN (
+    '1003001001','1003001002','1003001003','1003001004',
+    '1003001005','1003001006','1003001007','1003001008'
+);
 
 
 -- ============================================================
 -- PERIODO 2025-2
--- Estudiantes 1-12, algunos con descuentos, algunos pendientes
+-- 8 estudiantes nuevos, mezcla de pagados y pendientes
 -- ============================================================
 
 -- Cuentas corrientes 2025-2
 INSERT INTO cuenta_corriente (id_estudiante, id_periodo, fecha_cre)
 SELECT e.id_estudiante, pa.id_periodo, '2025-07-20 08:00:00'
-FROM estudiante e, periodo_academico pa
-WHERE pa.nombre = '2025-2'
-  AND e.num_doc IN (
-    '1001234501','1001234502','1001234503','1001234504',
-    '1001234505','1001234506','1001234507','1001234508',
-    '1001234509','1001234510','1001234511','1001234512'
-  );
+FROM estudiante e
+JOIN periodo_academico pa ON pa.nombre = '2025-2'
+WHERE e.num_doc IN (
+    '1003001009','1003001010','1003001011','1003001012',
+    '1003001013','1003001014','1003001015','1003001016'
+);
 
--- Volantes 2025-2 — modalidad GLOBAL
+-- Volantes 2025-2 (6 GLOBAL + 2 POR_CREDITOS)
 INSERT INTO volante_matricula (id_estu, id_per, id_prog, id_usuario, semestre, modalidad, val_tot, fecha_gen, id_cuenta)
 SELECT
     e.id_estudiante, pa.id_periodo, prog.id_programa,
@@ -124,119 +164,125 @@ SELECT
     rc.valor_global, '2025-07-20 09:00:00',
     cc.id_cuenta
 FROM estudiante e
-JOIN periodo_academico pa ON pa.nombre = '2025-2'
-JOIN usuario u ON u.username = 'admin'
+JOIN periodo_academico  pa   ON pa.nombre          = '2025-2'
+JOIN usuario            u    ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
 JOIN (
-    SELECT '1001234501' num_doc, 'ADM-EMP' cod_prog, 2 semestre UNION ALL
-    SELECT '1001234502', 'ADM-EMP', 3 UNION ALL
-    SELECT '1001234503', 'CON-PUB', 2 UNION ALL
-    SELECT '1001234504', 'DER', 2 UNION ALL
-    SELECT '1001234505', 'PSI', 3 UNION ALL
-    SELECT '1001234507', 'ADM-EMP', 1 UNION ALL
-    SELECT '1001234508', 'CON-PUB', 1 UNION ALL
-    SELECT '1001234509', 'DER', 1 UNION ALL
-    SELECT '1001234510', 'PSI', 1 UNION ALL
-    SELECT '1001234511', 'ADM-EMP', 4 UNION ALL
-    SELECT '1001234512', 'CON-PUB', 3
+    SELECT '1003001009' num_doc, 'ADM-EMP' cod_prog, 2 semestre UNION ALL
+    SELECT '1003001010', 'CON-PUB', 1                           UNION ALL
+    SELECT '1003001011', 'DER',     3                           UNION ALL
+    SELECT '1003001012', 'PSI',     2                           UNION ALL
+    SELECT '1003001013', 'ADM-EMP', 4                           UNION ALL
+    SELECT '1003001014', 'CON-PUB', 3
 ) t ON e.num_doc = t.num_doc
-JOIN programa_academico prog ON prog.codigo = t.cod_prog
-JOIN regla_cobro rc ON rc.id_periodo = pa.id_periodo AND rc.id_programa = prog.id_programa
-JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante AND cc.id_periodo = pa.id_periodo;
+JOIN programa_academico prog ON prog.codigo         = t.cod_prog
+JOIN regla_cobro        rc   ON rc.id_periodo        = pa.id_periodo
+                             AND rc.id_programa       = prog.id_programa
+JOIN cuenta_corriente   cc   ON cc.id_estudiante     = e.id_estudiante
+                             AND cc.id_periodo         = pa.id_periodo;
 
--- Volante 2025-2 — modalidad POR_CREDITOS (ING-SIS)
+-- Volantes 2025-2 — POR_CREDITOS (ING-SIS)
 INSERT INTO volante_matricula (id_estu, id_per, id_prog, id_usuario, semestre, modalidad, val_tot, fecha_gen, id_cuenta)
 SELECT
     e.id_estudiante, pa.id_periodo, prog.id_programa,
-    u.id_usuario, 3, 'Creditos',
-    rc.valor_credito * 14, '2025-07-20 09:00:00',
+    u.id_usuario, t.semestre, 'Creditos',
+    rc.valor_credito * t.creditos, '2025-07-20 09:00:00',
     cc.id_cuenta
 FROM estudiante e
-JOIN periodo_academico pa ON pa.nombre = '2025-2'
-JOIN usuario u ON u.username = 'admin'
-JOIN programa_academico prog ON prog.codigo = 'ING-SIS'
-JOIN regla_cobro rc ON rc.id_periodo = pa.id_periodo AND rc.id_programa = prog.id_programa
-JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante AND cc.id_periodo = pa.id_periodo
-WHERE e.num_doc = '1001234506';
+JOIN periodo_academico  pa   ON pa.nombre          = '2025-2'
+JOIN usuario            u    ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
+JOIN (
+    SELECT '1003001015' num_doc, 'ING-SIS' cod_prog, 2 semestre, 15 creditos UNION ALL
+    SELECT '1003001016', 'ING-SIS', 3, 16
+) t ON e.num_doc = t.num_doc
+JOIN programa_academico prog ON prog.codigo         = t.cod_prog
+JOIN regla_cobro        rc   ON rc.id_periodo        = pa.id_periodo
+                             AND rc.id_programa       = prog.id_programa
+JOIN cuenta_corriente   cc   ON cc.id_estudiante     = e.id_estudiante
+                             AND cc.id_periodo         = pa.id_periodo;
 
--- Movimientos COBRO 2025-2
+-- Cobros 2025-2
 INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
 SELECT
     cc.id_cuenta,
     cd.id_codigo,
-    CONCAT('Matrícula semestre ', vm.semestre, ' — ', pa.nombre),
+    CONCAT('Matrícula semestre ', vm.semestre, ' — 2025-2'),
     vm.val_tot,
-    '2025-07-20 09:30:00',
+    '2025-07-20 10:00:00',
     u.id_usuario
-FROM volante_matricula vm
-JOIN cuenta_corriente cc ON vm.id_cuenta = cc.id_cuenta
-JOIN periodo_academico pa ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-2'
-JOIN codigo_detalle cd ON cd.codigo = 'PMAT' AND cd.grupo = 'COBRO'
-JOIN usuario u ON u.username = 'admin';
+FROM cuenta_corriente   cc
+JOIN volante_matricula  vm  ON vm.id_cuenta  = cc.id_cuenta
+JOIN codigo_detalle     cd  ON cd.codigo     = 'PMAT' AND cd.grupo = 'COBRO'
+JOIN usuario            u   ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
+JOIN periodo_academico  pa  ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-2'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
+WHERE e.num_doc IN (
+    '1003001009','1003001010','1003001011','1003001012',
+    '1003001013','1003001014','1003001015','1003001016'
+);
 
--- Pagos 2025-2 — estudiantes 1-9 pagaron, 10-12 pendientes
+-- Pagos 2025-2 — solo los primeros 5 pagaron, los últimos 3 quedan pendientes
 INSERT INTO pago (id_cuenta, id_usuario, medio, ref, monto, fecha)
 SELECT
     cc.id_cuenta,
     u.id_usuario,
-    CASE (cc.id_cuenta % 3)
-        WHEN 0 THEN 'PSE'
-        WHEN 1 THEN 'Efectivo'
-        ELSE 'Cheque'
-    END,
-    CONCAT('REF-2025-2-', cc.id_cuenta),
+    'CAJA',
+    CONCAT('CAJA-2025-2-', e.num_doc),
     vm.val_tot,
-    '2025-08-10 10:00:00'
-FROM cuenta_corriente cc
-JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo AND pa.nombre = '2025-2'
-JOIN volante_matricula vm ON vm.id_cuenta = cc.id_cuenta
-JOIN estudiante e ON cc.id_estudiante = e.id_estudiante
-JOIN usuario u ON u.username = 'admin'
+    '2025-08-01 11:00:00'
+FROM cuenta_corriente   cc
+JOIN volante_matricula  vm  ON vm.id_cuenta    = cc.id_cuenta
+JOIN usuario            u   ON u.id_usuario = (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1)
+JOIN periodo_academico  pa  ON pa.id_periodo   = cc.id_periodo AND pa.nombre = '2025-2'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
 WHERE e.num_doc IN (
-    '1001234501','1001234502','1001234503',
-    '1001234504','1001234505','1001234506',
-    '1001234507','1001234508','1001234509'
+    '1003001009','1003001010','1003001011','1003001012','1003001013'
 );
 
--- Descuento beca 2025-2 para estudiante 1001234510
-INSERT INTO pago (id_cuenta, id_usuario, medio, ref, monto, fecha)
-SELECT cc.id_cuenta, u.id_usuario, 'DESCUENTO',
-    CONCAT('DESC-2025-2-', cc.id_cuenta),
-    vm.val_tot * 0.25, '2025-08-01 10:00:00'
-FROM cuenta_corriente cc
-JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo AND pa.nombre = '2025-2'
-JOIN volante_matricula vm ON vm.id_cuenta = cc.id_cuenta
-JOIN estudiante e ON cc.id_estudiante = e.id_estudiante
-JOIN usuario u ON u.username = 'admin'
-WHERE e.num_doc = '1001234510';
-
--- Movimientos PAGO 2025-2
+-- Movimiento MPAG 2025-2 (solo los que pagaron)
 INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
 SELECT
     p.id_cuenta,
     cd.id_codigo,
-    CONCAT('Pago recibido — ', p.medio),
+    'Pago recibido — Caja',
     p.monto,
     p.fecha,
     p.id_usuario
 FROM pago p
-JOIN cuenta_corriente cc ON p.id_cuenta = cc.id_cuenta
-JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo AND pa.nombre = '2025-2'
-JOIN codigo_detalle cd ON cd.codigo = 'MPAG' AND cd.grupo = 'PAGO';
+JOIN codigo_detalle     cd  ON cd.codigo    = 'MPAG' AND cd.grupo = 'PAGO'
+JOIN cuenta_corriente   cc  ON cc.id_cuenta = p.id_cuenta
+JOIN periodo_academico  pa  ON pa.id_periodo = cc.id_periodo AND pa.nombre = '2025-2'
+JOIN estudiante         e   ON e.id_estudiante = cc.id_estudiante
+WHERE e.num_doc IN (
+    '1003001009','1003001010','1003001011','1003001012','1003001013'
+);
+
+-- ============================================================
+-- ASIGNATURAS DE VOLANTES POR CRÉDITOS
+-- Iván Portilla (semestre 2, ING-SIS) y Andrea Solano (semestre 3, ING-SIS)
+-- ============================================================
+
+INSERT INTO volante_asignatura (id_volante, id_asig)
+SELECT vm.id_volante, pe.id_asignatura
+FROM volante_matricula vm
+JOIN estudiante e ON e.id_estudiante = vm.id_estu
+JOIN plan_estudio pe ON pe.id_programa = vm.id_prog AND pe.semestre = vm.semestre
+WHERE e.num_doc IN ('1003001015', '1003001016')
+  AND vm.modalidad = 'Creditos';
 
 -- ============================================================
 -- VERIFICACIÓN FINAL
 -- ============================================================
-SELECT 'Historial cargado:' AS info;
-SELECT pa.nombre AS periodo,
-       COUNT(DISTINCT cc.id_cuenta) AS cuentas,
-       COUNT(DISTINCT vm.id_volante) AS volantes,
-       COUNT(DISTINCT p.id_pago) AS pagos,
-       SUM(vm.val_tot) AS total_cobrado,
-       SUM(p.monto) AS total_pagado
-FROM periodo_academico pa
-LEFT JOIN cuenta_corriente cc ON pa.id_periodo = cc.id_periodo
-LEFT JOIN volante_matricula vm ON cc.id_cuenta = vm.id_cuenta
-LEFT JOIN pago p ON cc.id_cuenta = p.id_cuenta
-WHERE pa.nombre IN ('2025-1','2025-2')
-GROUP BY pa.nombre
-ORDER BY pa.nombre;
+SELECT
+    e.nombres, e.apellidos, e.num_doc,
+    pa.nombre AS periodo,
+    pr.nombre AS programa,
+    vm.semestre, vm.modalidad, vm.val_tot,
+    CASE WHEN p.id_pago IS NOT NULL THEN 'PAGADO' ELSE 'PENDIENTE' END AS estado_pago
+FROM estudiante         e
+JOIN cuenta_corriente   cc  ON cc.id_estudiante = e.id_estudiante
+JOIN periodo_academico  pa  ON pa.id_periodo    = cc.id_periodo
+JOIN volante_matricula  vm  ON vm.id_cuenta     = cc.id_cuenta
+JOIN programa_academico pr  ON pr.id_programa   = vm.id_prog
+LEFT JOIN pago          p   ON p.id_cuenta      = cc.id_cuenta
+WHERE e.num_doc LIKE '1003%'
+ORDER BY pa.nombre, e.apellidos;

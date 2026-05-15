@@ -48,7 +48,10 @@ def lista_cuentas():
 
     cuentas  = ejecutar_consulta(sql, params, fetch=True) or []
     periodos = ejecutar_consulta(
-        "SELECT id_periodo, nombre FROM periodo_academico ORDER BY nombre DESC",
+        """SELECT id_periodo, nombre FROM periodo_academico
+           WHERE EXISTS (SELECT 1 FROM volante_matricula vm WHERE vm.id_per = periodo_academico.id_periodo)
+              OR EXISTS (SELECT 1 FROM cuenta_corriente cc WHERE cc.id_periodo = periodo_academico.id_periodo)
+           ORDER BY nombre DESC""",
         fetch=True
     )
     return render_template('cuentas/lista.html',
@@ -170,4 +173,3 @@ def agregar_cobro(id_cuenta):
     )
     flash('Cobro adicional registrado correctamente.', 'success')
     return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
-

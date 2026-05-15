@@ -94,23 +94,6 @@
     </div>
 </div>
 
-<!-- Franja de verificación de balance -->
-<div class="card mb-4 border-0 {% if diferencia == 0 %}bg-success{% else %}bg-danger{% endif %} bg-opacity-10">
-    <div class="card-body py-2 d-flex align-items-center gap-3">
-        <span class="fw-semibold">Verificación de balance:</span>
-        <code class="fs-6">
-            ${{ "{:,.0f}".format(total_cobros) }} (COBROS)
-            − ${{ "{:,.0f}".format(total_pagos) }} (PAGOS)
-            = ${{ "{:,.0f}".format(saldo_pendiente) }} (SALDO)
-        </code>
-        {% if diferencia == 0 %}
-        <span class="badge bg-success ms-auto fs-6"><i class="bi-check-lg me-1"></i>✓ Cuadra</span>
-        {% else %}
-        <span class="badge bg-danger ms-auto fs-6"><i class="bi-x-lg me-1"></i>✗ No cuadra (Δ ${{ "{:,.0f}".format(diferencia | abs) }})</span>
-        {% endif %}
-    </div>
-</div>
-
 <!-- Tabla de movimientos -->
 <div class="card mb-4">
     <div class="card-header fw-semibold d-flex justify-content-between">

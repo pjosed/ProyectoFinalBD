@@ -38,7 +38,10 @@ def lista_volantes():
 
     volantes  = ejecutar_consulta(sql, params, fetch=True)
     periodos  = ejecutar_consulta(
-        "SELECT id_periodo, nombre FROM periodo_academico ORDER BY nombre DESC",
+        """SELECT id_periodo, nombre FROM periodo_academico
+           WHERE EXISTS (SELECT 1 FROM volante_matricula vm WHERE vm.id_per = periodo_academico.id_periodo)
+              OR EXISTS (SELECT 1 FROM cuenta_corriente cc WHERE cc.id_periodo = periodo_academico.id_periodo)
+           ORDER BY nombre DESC""",
         fetch=True
     )
     programas = ejecutar_consulta(

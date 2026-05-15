@@ -88,7 +88,7 @@
                         <option value="">— Seleccione una beca —</option>
                         {% for t in tipos_descuento %}
                         <option value="{{ t.id_tipo }}" data-pct="{{ t.porcentaje }}">
-                            {{ t.nombre }} ({{ t.porcentaje | int }}%)
+                            {{ t.nombre }} 
                         </option>
                         {% endfor %}
                     </select>

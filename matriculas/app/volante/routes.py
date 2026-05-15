@@ -54,9 +54,9 @@ def _datos_volante(id_cuenta, id_periodo):
             asignaturas = ejecutar_consulta(
                 """SELECT a.codigo, a.nombre, pe.creditos
                    FROM volante_asignatura va
-                   JOIN asignatura          a  ON va.id_asig       = a.id_asignatura
-                   JOIN plan_estudio        pe ON pe.id_asignatura  = a.id_asignatura
-                                              AND pe.id_programa    = %s
+                   JOIN asignatura   a  ON va.id_asig      = a.id_asignatura
+                   JOIN plan_estudio pe ON pe.id_asignatura = a.id_asignatura
+                                      AND pe.id_programa   = %s
                    WHERE va.id_volante = %s""",
                 (base['id_programa'], id_volante_row['id_volante']),
                 fetch=True
@@ -100,17 +100,31 @@ def buscar():
     estudiantes = []
     if q:
         like = f'%{q}%'
+        # Solo muestra estudiantes que tienen volante generado (con programa asignado)
         estudiantes = ejecutar_consulta(
-            """SELECT e.id_estudiante, e.nombres, e.apellidos,
-                      e.num_doc, e.tipo_doc, pr.nombre AS programa, cc.id_cuenta
-               FROM estudiante e
-               JOIN cuenta_corriente    cc ON cc.id_estudiante = e.id_estudiante
-               LEFT JOIN volante_matricula  vm ON vm.id_cuenta = cc.id_cuenta
-               LEFT JOIN programa_academico pr ON vm.id_prog   = pr.id_programa
-               WHERE e.activo = TRUE
-                 AND (e.nombres LIKE %s OR e.apellidos LIKE %s OR e.num_doc LIKE %s)
-               GROUP BY e.id_estudiante, cc.id_cuenta, pr.nombre
-               ORDER BY e.apellidos, e.nombres LIMIT 50""",
+            """
+            SELECT e.id_estudiante, e.nombres, e.apellidos,
+                   e.num_doc, e.tipo_doc,
+                   MAX(pr.nombre) AS programa,
+                   cc.id_cuenta
+            FROM estudiante e
+            JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
+            JOIN (
+                SELECT vm1.id_cuenta, vm1.id_prog
+                FROM volante_matricula vm1
+                INNER JOIN (
+                    SELECT id_cuenta, MAX(id_volante) AS max_vol
+                    FROM volante_matricula
+                    GROUP BY id_cuenta
+                ) vm2 ON vm1.id_cuenta = vm2.id_cuenta AND vm1.id_volante = vm2.max_vol
+            ) vm ON vm.id_cuenta = cc.id_cuenta
+            JOIN programa_academico pr ON vm.id_prog = pr.id_programa
+            WHERE e.activo = TRUE
+              AND (e.nombres LIKE %s OR e.apellidos LIKE %s OR e.num_doc LIKE %s)
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta
+            ORDER BY e.apellidos, e.nombres
+            LIMIT 50
+            """,
             (like, like, like), fetch=True
         ) or []
     return render_template('volante/buscar.html', estudiantes=estudiantes, q=q)

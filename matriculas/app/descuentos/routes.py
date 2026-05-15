@@ -81,16 +81,24 @@ def buscar():
             """
             SELECT e.id_estudiante, e.nombres, e.apellidos,
                    e.num_doc, e.tipo_doc,
-                   pr.nombre AS programa
+                   MAX(pr.nombre) AS programa
             FROM estudiante e
-            LEFT JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
-            LEFT JOIN volante_matricula vm ON vm.id_cuenta    = cc.id_cuenta
-            LEFT JOIN programa_academico          pr ON vm.id_prog      = pr.id_programa
+            JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
+            LEFT JOIN (
+                SELECT vm1.id_cuenta, vm1.id_prog
+                FROM volante_matricula vm1
+                INNER JOIN (
+                    SELECT id_cuenta, MAX(id_volante) AS max_vol
+                    FROM volante_matricula
+                    GROUP BY id_cuenta
+                ) vm2 ON vm1.id_cuenta = vm2.id_cuenta AND vm1.id_volante = vm2.max_vol
+            ) vm ON vm.id_cuenta = cc.id_cuenta
+            LEFT JOIN programa_academico pr ON vm.id_prog = pr.id_programa
             WHERE e.activo = TRUE
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante, pr.nombre
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
@@ -195,11 +203,7 @@ def aplicar(id_estudiante):
         flash('Esta cuenta no tiene saldo pendiente; no se puede aplicar un descuento.', 'info')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
 
-    valor_descuento = round(saldo * porcentaje / 100, 2)
-
-    # ── Insertar en BD via stored procedure o INSERT directo ──────────────────
-    # El SP sp_aplicar_descuento (script 08) requiere:
-    #   p_id_estudiante, p_id_periodo, p_id_tipo, p_porcentaje, p_observacion, p_id_usuario
+    # ── Aplicar descuento via stored procedure ────────────────────────────────
     conexion = None
     cursor   = None
     try:
@@ -207,7 +211,6 @@ def aplicar(id_estudiante):
         conexion.autocommit = False
         cursor = conexion.cursor(dictionary=True)
 
-        # Llamada al stored procedure definido en 08_Descuentos&Becas.sql
         cursor.callproc('sp_aplicar_descuento', [
             id_estudiante,
             id_periodo,

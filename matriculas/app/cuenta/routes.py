@@ -45,22 +45,29 @@ def buscar():
 
     if q:
         like = f'%{q}%'
-        # Devuelve solo estudiantes que ya tienen al menos una cuenta corriente
         estudiantes = ejecutar_consulta(
             """
             SELECT e.id_estudiante, e.nombres, e.apellidos,
                    e.num_doc, e.tipo_doc,
-                   pr.nombre AS programa,
+                   MAX(pr.nombre) AS programa,
                    cc.id_cuenta
             FROM estudiante e
-            JOIN cuenta_corriente  cc ON cc.id_estudiante = e.id_estudiante
-            LEFT JOIN volante_matricula vm ON vm.id_cuenta = cc.id_cuenta
-            LEFT JOIN programa_academico          pr ON vm.id_prog   = pr.id_programa
+            JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
+            LEFT JOIN (
+                SELECT vm1.id_cuenta, vm1.id_prog
+                FROM volante_matricula vm1
+                INNER JOIN (
+                    SELECT id_cuenta, MAX(id_volante) AS max_vol
+                    FROM volante_matricula
+                    GROUP BY id_cuenta
+                ) vm2 ON vm1.id_cuenta = vm2.id_cuenta AND vm1.id_volante = vm2.max_vol
+            ) vm ON vm.id_cuenta = cc.id_cuenta
+            LEFT JOIN programa_academico pr ON vm.id_prog = pr.id_programa
             WHERE e.activo = TRUE
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante, cc.id_cuenta, pr.nombre
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
@@ -79,10 +86,8 @@ def buscar():
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR', 'ASISTENTE')
 def cuenta_corriente(id_cuenta):
-    # Selector de periodo: usa el de la URL o el propio de la cuenta
     id_periodo_sel = request.args.get('id_periodo', '')
 
-    # Datos básicos de la cuenta
     cuenta = ejecutar_uno(
         """
         SELECT cc.id_cuenta, cc.id_periodo,
@@ -103,16 +108,12 @@ def cuenta_corriente(id_cuenta):
         flash('Cuenta corriente no encontrada.', 'danger')
         return redirect(url_for('cuenta.buscar'))
 
-    # Si no se pasó periodo en la URL, usar el de la cuenta
     if not id_periodo_sel:
         id_periodo_sel = cuenta['id_periodo']
 
-    # Todos los periodos disponibles para el selector
     periodos = _get_periodos()
 
-    # Movimientos del periodo seleccionado, ordenados por fecha ASC
-    # (la vista v_movimientos_con_saldo del script 09 ya calcula el saldo
-    # acumulado con window functions; la usamos directamente)
+    # Intentar con la vista primero
     movimientos = ejecutar_consulta(
         """
         SELECT v.id_movimiento,
@@ -133,20 +134,20 @@ def cuenta_corriente(id_cuenta):
         fetch=True
     ) or []
 
-    # Si la vista no existe todavía en este entorno, calculamos manualmente
+    # Fallback manual si la vista no devuelve datos
     if not movimientos:
         raw = ejecutar_consulta(
             """
             SELECT mc.id_movimiento,
-                   cd.nombre  AS movimiento,
+                   cd.descripcion AS movimiento,
                    cd.codigo,
-                   cd.grupo   AS tipo,
-                   mc.monto   AS valor,
+                   cd.grupo       AS tipo,
+                   mc.monto       AS valor,
                    mc.fecha,
-                   mc.descrip AS observacion
+                   mc.descrip     AS observacion
             FROM movimiento_cuenta mc
-            JOIN codigo_detalle    cd  ON mc.id_codigo  = cd.id_codigo
-            JOIN cuenta_corriente  cc  ON mc.id_cuenta  = cc.id_cuenta
+            JOIN codigo_detalle   cd ON mc.id_codigo  = cd.id_codigo
+            JOIN cuenta_corriente cc ON mc.id_cuenta  = cc.id_cuenta
             WHERE mc.id_cuenta  = %s
               AND cc.id_periodo = %s
             ORDER BY mc.fecha ASC, mc.id_movimiento ASC
@@ -164,9 +165,9 @@ def cuenta_corriente(id_cuenta):
         "SELECT COALESCE(SUM(monto), 0) AS total FROM pago WHERE id_cuenta = %s",
         (id_cuenta,)
     )
-    total_pagos   = float(total_pagos_raw['total']) if total_pagos_raw else 0.0
+    total_pagos     = float(total_pagos_raw['total']) if total_pagos_raw else 0.0
     saldo_pendiente = total_cobros - total_pagos
-    diferencia      = 0.0   # la vista ya garantiza consistencia
+    diferencia      = 0.0
 
     estado = 'PENDIENTE' if saldo_pendiente > 0 else 'BALANCEADO'
 
