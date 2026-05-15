@@ -216,11 +216,11 @@ function cargarAsignaturas(idProg, semestre, regla) {
             const div = document.getElementById('lista_asignaturas');
             div.innerHTML = data.map(a =>
                 `<div class="col-md-6 mb-2">
-                    <div class="form-check border rounded p-3 ps-4 d-flex align-items-center gap-3">
-                        <input class="form-check-input asig-check flex-shrink-0 me-2" type="checkbox"
-                               name="asignaturas" value="${a.id_asignatura}"
-                               data-creditos="${a.creditos}"
-                               id="asig_${a.id_asignatura}">
+                <div class="form-check border rounded p-3 ps-4 d-flex align-items-center gap-3">
+                    <input class="form-check-input asig-check flex-shrink-0 me-2" type="checkbox"
+                        name="asignaturas" value="${a.id_asignatura}"
+                            data-creditos="${a.creditos}"
+                            id="asig_${a.id_asignatura}">
                         <label class="form-check-label small ms-1" for="asig_${a.id_asignatura}">
                             <strong>${a.codigo}</strong> — ${a.nombre}
                             <span class="badge bg-secondary ms-1">${a.creditos} cr.</span>
