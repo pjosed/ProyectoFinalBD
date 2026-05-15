@@ -46,7 +46,7 @@ def lista_cuentas():
         params.extend([like, like, like])
     sql += " ORDER BY pa.nombre DESC, e.apellidos"
 
-    cuentas = ejecutar_consulta(sql, params, fetch=True) or []
+    cuentas  = ejecutar_consulta(sql, params, fetch=True) or []
     periodos = ejecutar_consulta(
         "SELECT id_periodo, nombre FROM periodo_academico ORDER BY nombre DESC",
         fetch=True
@@ -97,13 +97,25 @@ def detalle_cuenta(id_cuenta):
         (id_cuenta,), fetch=True
     ) or []
 
-    # Códigos de cobro adicional (excluye PMAT que se genera automáticamente)
+    # Valor por crédito según regla_cobro — debe ir ANTES de codigos_cobro
+    regla = ejecutar_uno(
+        """SELECT rc.valor_credito
+           FROM regla_cobro rc
+           JOIN volante_matricula vm ON rc.id_periodo  = vm.id_per
+                                    AND rc.id_programa = vm.id_prog
+           WHERE vm.id_cuenta = %s LIMIT 1""",
+        (id_cuenta,)
+    )
+    valor_credito = float(regla['valor_credito']) if regla and regla['valor_credito'] else 0
+
+    # Ocultar PCRE para programas con modalidad GLOBAL (valor_credito = 0)
     codigos_cobro = ejecutar_consulta(
         """SELECT id_codigo, codigo, descripcion
            FROM codigo_detalle
            WHERE grupo = 'COBRO' AND codigo != 'PMAT'
+             AND (%s > 0 OR codigo != 'PCRE')
            ORDER BY codigo""",
-        fetch=True
+        (valor_credito,), fetch=True
     ) or []
 
     total_cobros = sum(float(m['monto']) for m in movimientos if m['grupo'] == 'COBRO')
@@ -115,6 +127,7 @@ def detalle_cuenta(id_cuenta):
                            movimientos=movimientos,
                            pagos=pagos,
                            codigos_cobro=codigos_cobro,
+                           valor_credito=valor_credito,
                            total_cobros=total_cobros,
                            total_pagos=total_pagos,
                            saldo=saldo)
@@ -126,9 +139,9 @@ def detalle_cuenta(id_cuenta):
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'ASISTENTE')
 def agregar_cobro(id_cuenta):
-    id_codigo = request.form.get('id_codigo')
-    monto     = request.form.get('monto', '').strip()
-    descrip   = request.form.get('descrip', '').strip()
+    id_codigo  = request.form.get('id_codigo')
+    monto      = request.form.get('monto', '').strip()
+    descrip    = request.form.get('descrip', '').strip()
     id_usuario = session['usuario_id']
 
     if not id_codigo or not monto:
@@ -143,7 +156,6 @@ def agregar_cobro(id_cuenta):
         flash('El monto debe ser un número mayor a cero.', 'warning')
         return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
 
-    # Obtener descripción del código si no se ingresó una
     if not descrip:
         cod = ejecutar_uno(
             "SELECT descripcion FROM codigo_detalle WHERE id_codigo = %s",
@@ -158,3 +170,4 @@ def agregar_cobro(id_cuenta):
     )
     flash('Cobro adicional registrado correctamente.', 'success')
     return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+

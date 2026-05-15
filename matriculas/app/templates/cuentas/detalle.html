@@ -12,7 +12,6 @@
     </a>
 </div>
 
-<!-- Resumen superior -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="row align-items-center">
@@ -27,9 +26,7 @@
                     <dt class="col-sm-5 text-muted small">Periodo</dt>
                     <dd class="col-sm-7">{{ cuenta.nom_periodo }}</dd>
                     <dt class="col-sm-5 text-muted small">Apertura</dt>
-                    <dd class="col-sm-7 small">
-                        {{ cuenta.fecha_cre.strftime('%d/%m/%Y %H:%M') if cuenta.fecha_cre else '—' }}
-                    </dd>
+                    <dd class="col-sm-7 small">{{ cuenta.fecha_cre.strftime('%d/%m/%Y %H:%M') if cuenta.fecha_cre else '—' }}</dd>
                 </dl>
             </div>
             <div class="col-md-7">
@@ -54,12 +51,10 @@
                             </div>
                             {% if saldo > 0 %}
                             <div class="mt-2 d-flex gap-1 justify-content-center flex-wrap">
-                                <a href="{{ url_for('pagos.pago_caja', id_cuenta=cuenta.id_cuenta) }}"
-                                   class="btn btn-sm btn-outline-danger">
+                                <a href="{{ url_for('pagos.pago_caja', id_cuenta=cuenta.id_cuenta) }}" class="btn btn-sm btn-outline-danger">
                                     <i class="bi-cash-coin me-1"></i>Caja
                                 </a>
-                                <a href="{{ url_for('pagos.pse_paso1', id_cuenta=cuenta.id_cuenta) }}"
-                                   class="btn btn-sm btn-primary">
+                                <a href="{{ url_for('pagos.pse_paso1', id_cuenta=cuenta.id_cuenta) }}" class="btn btn-sm btn-primary">
                                     <i class="bi-credit-card-2-front me-1"></i>PSE
                                 </a>
                             </div>
@@ -73,44 +68,48 @@
 </div>
 
 <div class="row g-3">
-
-    <!-- Movimientos (cobros) -->
     <div class="col-md-7">
         <div class="card">
             <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
-                <span><i class="bi-arrow-up-circle text-danger me-2"></i>Movimientos de Cobro</span>
+                <span><i class="bi-arrow-up-circle text-danger me-2"></i>Movimientos de Cuenta</span>
                 <button class="btn btn-sm btn-outline-danger" type="button"
                         data-bs-toggle="collapse" data-bs-target="#formCobroAdicional">
                     <i class="bi-plus-circle me-1"></i>Cobro adicional
                 </button>
             </div>
 
-            <!-- Formulario cobro adicional (colapsable) -->
             <div class="collapse" id="formCobroAdicional">
                 <div class="card-body border-bottom bg-light">
                     <form method="POST" action="{{ url_for('cuentas.agregar_cobro', id_cuenta=cuenta.id_cuenta) }}">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-4">
+                        <div class="d-flex gap-2 align-items-end flex-wrap">
+                            <div style="min-width:180px; flex:2;">
                                 <label class="form-label small mb-1">Concepto <span class="text-danger">*</span></label>
-                                <select name="id_codigo" class="form-select form-select-sm" required>
+                                <select name="id_codigo" id="sel_codigo" class="form-select form-select-sm"
+                                        required onchange="actualizarMonto(this)">
                                     <option value="">— Seleccione —</option>
                                     {% for c in codigos_cobro %}
-                                    <option value="{{ c.id_codigo }}">{{ c.codigo }} — {{ c.descripcion }}</option>
+                                    <option value="{{ c.id_codigo }}" data-codigo="{{ c.codigo }}">
+                                        {{ c.codigo }} — {{ c.descripcion }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div style="width:90px;" class="d-none" id="campo_creditos">
+                                <label class="form-label small mb-1">Créditos</label>
+                                <input type="number" id="num_creditos" class="form-control form-control-sm"
+                                       placeholder="0" min="1" max="30" step="1" oninput="calcularPCRE()">
+                            </div>
+                            <div style="width:110px;">
                                 <label class="form-label small mb-1">Monto <span class="text-danger">*</span></label>
-                                <input type="number" name="monto" class="form-control form-control-sm"
-                                       placeholder="0" min="1" step="1000" required>
+                                <input type="number" name="monto" id="inp_monto" class="form-control form-control-sm"
+                                       placeholder="0" min="1" step="1" required>
                             </div>
-                            <div class="col-md-3">
+                            <div style="flex:2; min-width:120px;">
                                 <label class="form-label small mb-1">Descripción</label>
-                                <input type="text" name="descrip" class="form-control form-control-sm"
-                                       placeholder="Opcional">
+                                <input type="text" name="descrip" class="form-control form-control-sm" placeholder="Opcional">
                             </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-sm btn-danger w-100">
+                            <div>
+                                <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="bi-plus-circle me-1"></i>Agregar
                                 </button>
                             </div>
@@ -134,12 +133,14 @@
                         <tr>
                             <td class="small">{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '—' }}</td>
                             <td>
-                                <span class="badge {% if m.grupo == 'COBRO' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                <span class="badge {% if m.grupo == 'COBRO' %}bg-danger{% else %}bg-success{% endif %}">
                                     {{ m.cod_concepto }}
                                 </span>
                             </td>
                             <td class="small">{{ m.descrip }}</td>
-                            <td class="text-end fw-semibold text-danger">+${{ "{:,.0f}".format(m.monto) }}</td>
+                            <td class="text-end fw-semibold {% if m.grupo == 'COBRO' %}text-danger{% else %}text-success{% endif %}">
+                                {% if m.grupo == 'COBRO' %}+{% else %}-{% endif %}${{ "{:,.0f}".format(m.monto) }}
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
@@ -152,7 +153,6 @@
         </div>
     </div>
 
-    <!-- Pagos -->
     <div class="col-md-5">
         <div class="card">
             <div class="card-header fw-semibold">
@@ -186,6 +186,32 @@
             </div>
         </div>
     </div>
-
 </div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+const valoresPredeterminados = { 'PCAR': 45000, 'PLAB': 120000, 'PEXA': 80000, 'PSEG': 35000, 'PCRE': 0 };
+const valorCredito = {{ valor_credito }};
+
+function actualizarMonto(sel) {
+    const codigo    = sel.options[sel.selectedIndex]?.dataset.codigo || '';
+    const inp       = document.getElementById('inp_monto');
+    const campoCred = document.getElementById('campo_creditos');
+    if (codigo === 'PCRE') {
+        campoCred.classList.remove('d-none');
+        inp.value = ''; inp.readOnly = true;
+        document.getElementById('num_creditos').value = '';
+    } else {
+        campoCred.classList.add('d-none');
+        inp.readOnly = false;
+        inp.value = valoresPredeterminados[codigo] || '';
+    }
+}
+
+function calcularPCRE() {
+    const creditos = parseInt(document.getElementById('num_creditos').value) || 0;
+    document.getElementById('inp_monto').value = creditos * valorCredito;
+}
+</script>
 {% endblock %}
