@@ -1,8 +1,6 @@
 """
 app/descuentos/routes.py
 Módulo de Descuentos y Becas — UniCaribe
-Permite buscar estudiantes, aplicar descuentos sobre su cuenta corriente
-y consultar el resultado de los descuentos aplicados en un periodo.
 """
 
 from flask import render_template, request, redirect, url_for, flash, session
@@ -13,30 +11,24 @@ from config.database import ejecutar_consulta, ejecutar_uno, get_connection
 from mysql.connector import Error
 
 
-# ─── helpers ──────────────────────────────────────────────────────────────────
-
 def _get_periodos_con_saldo(id_estudiante):
-    """Devuelve los periodos que tienen cuenta corriente para el estudiante,
-    junto con el saldo pendiente de cada uno."""
     return ejecutar_consulta(
         """
         SELECT cc.id_cuenta,
                cc.id_periodo,
-               pa.nombre                                      AS nom_periodo,
+               pa.nombre AS nom_periodo,
                pa.fecha_inicio,
                pa.fecha_fin,
                COALESCE(
                    (SELECT SUM(mc.monto)
                     FROM movimiento_cuenta mc
-                    JOIN codigo_detalle    cd ON mc.id_codigo = cd.id_codigo
+                    JOIN codigo_detalle cd ON mc.id_codigo = cd.id_codigo
                     WHERE mc.id_cuenta = cc.id_cuenta AND cd.grupo = 'COBRO'), 0
                ) -
                COALESCE(
-                   (SELECT SUM(pg.monto)
-                    FROM pago pg
-                    WHERE pg.id_cuenta = cc.id_cuenta), 0
-               )                                              AS saldo
-        FROM cuenta_corriente  cc
+                   (SELECT SUM(pg.monto) FROM pago pg WHERE pg.id_cuenta = cc.id_cuenta), 0
+               ) AS saldo
+        FROM cuenta_corriente cc
         JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo
         WHERE cc.id_estudiante = %s
         ORDER BY pa.nombre DESC
@@ -47,18 +39,16 @@ def _get_periodos_con_saldo(id_estudiante):
 
 
 def _get_descuentos_aplicados(id_cuenta):
-    """Devuelve todos los descuentos ya aplicados a una cuenta corriente."""
     return ejecutar_consulta(
         """
         SELECT da.id_descuento, da.porcentaje, da.valor_descuento,
-               da.observacion, da.fech_pub
-,
-               td.nombre  AS nombre_tipo,
-               pa.nombre  AS nom_periodo
+               da.observacion, da.fech_pub,
+               td.nombre AS nombre_tipo,
+               pa.nombre AS nom_periodo
         FROM descuento_aplicado da
-        JOIN tipo_descuento      td ON da.id_tipo    = td.id_tipo
-        JOIN cuenta_corriente    cc ON da.id_cuenta  = cc.id_cuenta
-        JOIN periodo_academico   pa ON cc.id_periodo = pa.id_periodo
+        JOIN tipo_descuento    td ON da.id_tipo   = td.id_tipo
+        JOIN cuenta_corriente  cc ON da.id_cuenta = cc.id_cuenta
+        JOIN periodo_academico pa ON cc.id_periodo = pa.id_periodo
         WHERE da.id_cuenta = %s
         ORDER BY da.fech_pub DESC
         """,
@@ -66,8 +56,6 @@ def _get_descuentos_aplicados(id_cuenta):
         fetch=True
     ) or []
 
-
-# ─── Buscar estudiante ────────────────────────────────────────────────────────
 
 @descuentos_bp.route('/buscar')
 @login_requerido
@@ -99,7 +87,7 @@ def buscar():
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
@@ -111,8 +99,6 @@ def buscar():
                            estudiantes=estudiantes,
                            q=q)
 
-
-# ─── Formulario de descuento ──────────────────────────────────────────────────
 
 @descuentos_bp.route('/formulario/<int:id_estudiante>', methods=['GET'])
 @login_requerido
@@ -136,7 +122,6 @@ def formulario(id_estudiante):
         fetch=True
     ) or []
 
-    # Panel lateral: descuentos de la primera cuenta disponible
     descuentos_aplicados = []
     if periodos:
         descuentos_aplicados = _get_descuentos_aplicados(periodos[0]['id_cuenta'])
@@ -148,22 +133,19 @@ def formulario(id_estudiante):
                            descuentos_aplicados=descuentos_aplicados)
 
 
-# ─── Aplicar descuento ────────────────────────────────────────────────────────
-
 @descuentos_bp.route('/aplicar/<int:id_estudiante>', methods=['POST'])
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
 def aplicar(id_estudiante):
-    id_periodo   = request.form.get('id_periodo',  '').strip()
-    id_tipo      = request.form.get('id_tipo',     '').strip()
-    observacion  = request.form.get('observacion', '').strip() or None
+    id_periodo  = request.form.get('id_periodo',  '').strip()
+    id_tipo     = request.form.get('id_tipo',     '').strip()
+    observacion = request.form.get('observacion', '').strip() or None
 
     try:
         porcentaje = float(request.form.get('porcentaje', 0))
     except ValueError:
         porcentaje = 0
 
-    # ── Validaciones básicas ──────────────────────────────────────────────────
     if not id_periodo:
         flash('Debes seleccionar un periodo.', 'warning')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
@@ -176,14 +158,13 @@ def aplicar(id_estudiante):
         flash('El porcentaje de descuento no es válido.', 'warning')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
 
-    # ── Obtener la cuenta corriente del estudiante en ese periodo ─────────────
     cuenta = ejecutar_uno(
         """
         SELECT cc.id_cuenta,
                COALESCE(
                    (SELECT SUM(mc.monto)
                     FROM movimiento_cuenta mc
-                    JOIN codigo_detalle    cd ON mc.id_codigo = cd.id_codigo
+                    JOIN codigo_detalle cd ON mc.id_codigo = cd.id_codigo
                     WHERE mc.id_cuenta = cc.id_cuenta AND cd.grupo = 'COBRO'), 0
                ) -
                COALESCE(
@@ -204,14 +185,12 @@ def aplicar(id_estudiante):
         flash('Esta cuenta no tiene saldo pendiente; no se puede aplicar un descuento.', 'info')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
 
-    # ── Aplicar descuento via stored procedure ────────────────────────────────
     conexion = None
     cursor   = None
     try:
         conexion = get_connection()
         conexion.autocommit = False
         cursor = conexion.cursor(dictionary=True)
-
         cursor.callproc('sp_aplicar_descuento', [
             id_estudiante,
             id_periodo,
@@ -221,7 +200,6 @@ def aplicar(id_estudiante):
             session['usuario_id']
         ])
         conexion.commit()
-
         flash('Descuento aplicado correctamente.', 'success')
         return redirect(url_for('descuentos.resultado',
                                 id_estudiante=id_estudiante,
@@ -239,8 +217,6 @@ def aplicar(id_estudiante):
             conexion.close()
 
 
-# ─── Resultado ────────────────────────────────────────────────────────────────
-
 @descuentos_bp.route('/resultado/<int:id_estudiante>')
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
@@ -255,30 +231,25 @@ def resultado(id_estudiante):
         flash('Estudiante no encontrado.', 'danger')
         return redirect(url_for('descuentos.buscar'))
 
-    # Resumen financiero de la cuenta en ese periodo
     cuenta = ejecutar_uno(
         """
         SELECT cc.id_cuenta,
-               CONCAT(e.nombres, ' ', e.apellidos)            AS estudiante,
+               CONCAT(e.nombres, ' ', e.apellidos) AS estudiante,
                e.id_estudiante,
-               pa.nombre                                       AS periodo,
+               pa.nombre AS periodo,
                COALESCE(
                    (SELECT SUM(mc.monto)
                     FROM movimiento_cuenta mc
-                    JOIN codigo_detalle    cd ON mc.id_codigo = cd.id_codigo
+                    JOIN codigo_detalle cd ON mc.id_codigo = cd.id_codigo
                     WHERE mc.id_cuenta = cc.id_cuenta AND cd.grupo = 'COBRO'), 0
-               )                                               AS total_cobros,
+               ) AS total_cobros,
                COALESCE(
                    (SELECT SUM(pg.monto) FROM pago pg WHERE pg.id_cuenta = cc.id_cuenta), 0
-               )                                               AS total_pagos,
-               -- total_descuentos es informativo; NO se resta del saldo porque
-               -- sp_aplicar_descuento ya inserta cada descuento en la tabla pago,
-               -- por lo que ya está contabilizado dentro de total_pagos.
+               ) AS total_pagos,
                COALESCE(
-                   (SELECT SUM(da.valor_descuento)
-                    FROM descuento_aplicado da
+                   (SELECT SUM(da.valor_descuento) FROM descuento_aplicado da
                     WHERE da.id_cuenta = cc.id_cuenta), 0
-               )                                               AS total_descuentos
+               ) AS total_descuentos
         FROM cuenta_corriente  cc
         JOIN estudiante        e  ON cc.id_estudiante = e.id_estudiante
         JOIN periodo_academico pa ON cc.id_periodo    = pa.id_periodo
@@ -291,12 +262,10 @@ def resultado(id_estudiante):
         flash('No se encontró la cuenta corriente para ese periodo.', 'warning')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
 
-    # saldo = cobros - pagos. Los descuentos ya están dentro de total_pagos
-    # (sp_aplicar_descuento los inserta en la tabla pago), así que NO se restan
-    # por segunda vez. total_descuentos se conserva solo para mostrarlo en pantalla.
     cuenta['saldo_pendiente'] = (
         float(cuenta['total_cobros'])
         - float(cuenta['total_pagos'])
+        - float(cuenta['total_descuentos'])
     )
     cuenta['estado'] = 'PENDIENTE' if cuenta['saldo_pendiente'] > 0 else 'BALANCEADO'
 
@@ -305,4 +274,3 @@ def resultado(id_estudiante):
     return render_template('descuentos/descuentos_resultado.html',
                            cuenta=cuenta,
                            descuentos=descuentos)
-

@@ -1,8 +1,7 @@
 -- ============================================================
 -- 01_estructura.sql — ESTRUCTURA COMPLETA DE LA BASE DE DATOS
 
--- ── Crea/limpia la base de datos ────────────────────────────
-DROP DATABASE IF EXISTS matriculas_uni;
+-- ── Crea la base de datos ────────────────────────────
 CREATE DATABASE matriculas_uni
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;

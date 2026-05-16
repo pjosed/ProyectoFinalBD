@@ -180,7 +180,7 @@
                                 <td class="ps-3">
                                     <div class="small fw-semibold">{{ d.nombre_tipo }}</div>
                                     <div class="text-muted" style="font-size:.75rem;">{{ d.nom_periodo }}</div>
-                                    <div class="text-muted" style="font-size:.7rem;">{{ d.fecha_aplicacion.strftime('%d/%m/%Y') if d.fecha_aplicacion else '—' }}</div>
+                                    <div class="text-muted" style="font-size:.7rem;">{{ d.fech_pub.strftime('%d/%m/%Y') if d.fech_pub else '—' }}</div>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-info text-dark">{{ d.porcentaje | int }}%</span>

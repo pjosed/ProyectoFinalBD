@@ -43,10 +43,34 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-semibold">Valor global (COP)</label>
+                <label class="form-label fw-semibold">Modalidad de cobro <span class="text-danger">*</span></label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="modalidad" id="mod_global"
+                               value="GLOBAL" required
+                               {% if not regla or regla.valor_global %}checked{% endif %}
+                               onchange="toggleModalidad()">
+                        <label class="form-check-label fw-semibold" for="mod_global">
+                            Global — tarifa fija
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="modalidad" id="mod_creditos"
+                               value="POR_CREDITOS"
+                               {% if regla and regla.valor_credito and not regla.valor_global %}checked{% endif %}
+                               onchange="toggleModalidad()">
+                        <label class="form-check-label fw-semibold" for="mod_creditos">
+                            Por créditos
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3" id="campo_global">
+                <label class="form-label fw-semibold">Valor global (COP) <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="number" name="valor_global" class="form-control"
+                    <input type="number" name="valor_global" id="valor_global" class="form-control"
                            min="0" step="1000"
                            value="{{ regla.valor_global if regla and regla.valor_global else '' }}"
                            placeholder="Ej: 4800000">
@@ -54,22 +78,17 @@
                 <div class="form-text">Tarifa fija por matrícula completa.</div>
             </div>
 
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Valor por crédito (COP)</label>
+            <div class="mb-4" id="campo_credito" style="display:none;">
+                <label class="form-label fw-semibold">Valor por crédito (COP) <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="number" name="valor_credito" class="form-control"
+                    <input type="number" name="valor_credito" id="valor_credito" class="form-control"
                            min="0" step="500"
                            value="{{ regla.valor_credito if regla and regla.valor_credito else '' }}"
                            placeholder="Ej: 95000">
                     <span class="input-group-text">/ crédito</span>
                 </div>
                 <div class="form-text">Se multiplica por el número de créditos matriculados.</div>
-            </div>
-
-            <div class="alert alert-info py-2 small">
-                <i class="bi-info-circle me-1"></i>
-                Puedes ingresar uno o ambos valores.
             </div>
 
             <div class="d-flex gap-2 mt-3">
@@ -85,4 +104,30 @@
         </form>
     </div>
 </div>
+
+<script>
+function toggleModalidad() {
+    const esGlobal     = document.getElementById('mod_global').checked;
+    const campoGlobal  = document.getElementById('campo_global');
+    const campoCred    = document.getElementById('campo_credito');
+    const inputGlobal  = document.getElementById('valor_global');
+    const inputCredito = document.getElementById('valor_credito');
+
+    if (esGlobal) {
+        campoGlobal.style.display = '';
+        campoCred.style.display   = 'none';
+        inputGlobal.required      = true;
+        inputCredito.required     = false;
+        inputCredito.value        = '';
+    } else {
+        campoGlobal.style.display = 'none';
+        campoCred.style.display   = '';
+        inputGlobal.required      = false;
+        inputCredito.required     = true;
+        inputGlobal.value         = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', toggleModalidad);
+</script>
 {% endblock %}

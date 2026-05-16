@@ -155,7 +155,7 @@ def volante(id_cuenta):
         """SELECT da.porcentaje, da.valor_descuento, td.nombre AS nombre_tipo
            FROM descuento_aplicado da
            JOIN tipo_descuento td ON da.id_tipo = td.id_tipo
-           WHERE da.id_cuenta = %s ORDER BY da.fecha_aplicacion""",
+           WHERE da.id_cuenta = %s ORDER BY da.fech_pub""",
         (id_cuenta,), fetch=True
     ) or []
 

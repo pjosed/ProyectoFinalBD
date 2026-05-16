@@ -91,7 +91,7 @@
                         </td>
                         <td class="text-muted small">{{ d.observacion | default('—') }}</td>
                         <td class="small">
-                            {{ d.fecha_aplicacion.strftime('%d/%m/%Y %H:%M') if d.fecha_aplicacion else '—' }}
+                            {{ d.fech_pub.strftime('%d/%m/%Y %H:%M') if d.fech_pub else '—' }}
                         </td>
                     </tr>
                     {% endfor %}
