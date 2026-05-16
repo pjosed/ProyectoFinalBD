@@ -26,12 +26,18 @@ def programa_nuevo():
         if not codigo or not nombre:
             flash('Código y nombre son obligatorios.', 'warning')
             return render_template('configuracion/programa_form.html', programa=None)
-        ejecutar_consulta(
-            "INSERT INTO programa_academico (codigo, nombre, num_sem) VALUES (%s, %s, %s)",
-            (codigo, nombre, num_sem)
-        )
-        flash('Programa creado correctamente.', 'success')
-        return redirect(url_for('configuracion.programas_lista'))
+        try:
+            ejecutar_consulta(
+                "INSERT INTO programa_academico (codigo, nombre, num_sem) VALUES (%s, %s, %s)",
+                (codigo, nombre, num_sem)
+            )
+            flash('Programa creado correctamente.', 'success')
+            return redirect(url_for('configuracion.programas_lista'))
+        except RuntimeError as e:
+            if '1062' in str(e):
+                flash(f'El código "{codigo}" ya existe. Use un código diferente.', 'danger')
+            else:
+                flash(f'Error al crear el programa: {e}', 'danger')
     return render_template('configuracion/programa_form.html', programa=None)
 
 
@@ -46,14 +52,24 @@ def programa_editar(id_programa):
         flash('Programa no encontrado.', 'danger')
         return redirect(url_for('configuracion.programas_lista'))
     if request.method == 'POST':
-        nombre        = request.form.get('nombre', '').strip()
+        codigo  = request.form.get('codigo', '').strip().upper()
+        nombre  = request.form.get('nombre', '').strip()
         num_sem = request.form.get('num_sem', programa['num_sem'])
-        ejecutar_consulta(
-            "UPDATE programa_academico SET nombre=%s, num_sem=%s WHERE id_programa=%s",
-            (nombre, num_sem, id_programa)
-        )
-        flash('Programa actualizado.', 'success')
-        return redirect(url_for('configuracion.programas_lista'))
+        if not codigo or not nombre:
+            flash('Código y nombre son obligatorios.', 'warning')
+            return render_template('configuracion/programa_form.html', programa=programa)
+        try:
+            ejecutar_consulta(
+                "UPDATE programa_academico SET codigo=%s, nombre=%s, num_sem=%s WHERE id_programa=%s",
+                (codigo, nombre, num_sem, id_programa)
+            )
+            flash('Programa actualizado correctamente.', 'success')
+            return redirect(url_for('configuracion.programas_lista'))
+        except RuntimeError as e:
+            if '1062' in str(e):
+                flash(f'El código "{codigo}" ya existe. Use un código diferente.', 'danger')
+            else:
+                flash(f'Error al actualizar el programa: {e}', 'danger')
     return render_template('configuracion/programa_form.html', programa=programa)
 
 
