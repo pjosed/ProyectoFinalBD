@@ -51,7 +51,8 @@ def _get_descuentos_aplicados(id_cuenta):
     return ejecutar_consulta(
         """
         SELECT da.id_descuento, da.porcentaje, da.valor_descuento,
-               da.observacion, da.fecha_aplicacion,
+               da.observacion, da.fech_pub
+,
                td.nombre  AS nombre_tipo,
                pa.nombre  AS nom_periodo
         FROM descuento_aplicado da
@@ -59,7 +60,7 @@ def _get_descuentos_aplicados(id_cuenta):
         JOIN cuenta_corriente    cc ON da.id_cuenta  = cc.id_cuenta
         JOIN periodo_academico   pa ON cc.id_periodo = pa.id_periodo
         WHERE da.id_cuenta = %s
-        ORDER BY da.fecha_aplicacion DESC
+        ORDER BY da.fech_pub DESC
         """,
         (id_cuenta,),
         fetch=True
@@ -270,6 +271,9 @@ def resultado(id_estudiante):
                COALESCE(
                    (SELECT SUM(pg.monto) FROM pago pg WHERE pg.id_cuenta = cc.id_cuenta), 0
                )                                               AS total_pagos,
+               -- total_descuentos es informativo; NO se resta del saldo porque
+               -- sp_aplicar_descuento ya inserta cada descuento en la tabla pago,
+               -- por lo que ya está contabilizado dentro de total_pagos.
                COALESCE(
                    (SELECT SUM(da.valor_descuento)
                     FROM descuento_aplicado da
@@ -287,10 +291,12 @@ def resultado(id_estudiante):
         flash('No se encontró la cuenta corriente para ese periodo.', 'warning')
         return redirect(url_for('descuentos.formulario', id_estudiante=id_estudiante))
 
+    # saldo = cobros - pagos. Los descuentos ya están dentro de total_pagos
+    # (sp_aplicar_descuento los inserta en la tabla pago), así que NO se restan
+    # por segunda vez. total_descuentos se conserva solo para mostrarlo en pantalla.
     cuenta['saldo_pendiente'] = (
         float(cuenta['total_cobros'])
         - float(cuenta['total_pagos'])
-        - float(cuenta['total_descuentos'])
     )
     cuenta['estado'] = 'PENDIENTE' if cuenta['saldo_pendiente'] > 0 else 'BALANCEADO'
 
@@ -299,3 +305,4 @@ def resultado(id_estudiante):
     return render_template('descuentos/descuentos_resultado.html',
                            cuenta=cuenta,
                            descuentos=descuentos)
+

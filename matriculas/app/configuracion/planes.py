@@ -36,8 +36,65 @@ def plan_detalle(id_programa):
            ORDER BY pe.semestre, a.nombre""",
         (id_programa,), fetch=True
     )
+    # Asignaturas que aún NO están en el plan de este programa
+    disponibles = ejecutar_consulta(
+        """SELECT a.id_asignatura, a.codigo, a.nombre
+           FROM asignatura a
+           WHERE a.activo = 1
+             AND a.id_asignatura NOT IN (
+                 SELECT pe.id_asignatura
+                 FROM plan_estudio pe
+                 WHERE pe.id_programa = %s
+             )
+           ORDER BY a.codigo""",
+        (id_programa,), fetch=True
+    )
     return render_template('configuracion/plan_detalle.html',
-                           programa=programa, plan=asignaturas, disponibles=[] or [])
+                           programa=programa,
+                           plan=asignaturas or [],
+                           disponibles=disponibles or [])
+
+
+@configuracion_bp.route('/planes/<int:id_programa>/agregar', methods=['POST'])
+@login_requerido
+@rol_requerido('ADMINISTRADOR', 'SUPERVISOR')
+def plan_agregar(id_programa):
+    id_asignatura = request.form.get('id_asignatura', '').strip()
+    semestre      = request.form.get('semestre', '').strip()
+    creditos      = request.form.get('creditos', '').strip()
+
+    if not id_asignatura or not semestre or not creditos:
+        flash('Todos los campos son obligatorios.', 'warning')
+        return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
+
+    try:
+        semestre = int(semestre)
+        creditos = int(creditos)
+        if semestre < 1 or creditos < 1:
+            raise ValueError
+    except ValueError:
+        flash('Semestre y créditos deben ser números mayores a cero.', 'warning')
+        return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
+
+    programa = ejecutar_uno(
+        "SELECT num_sem FROM programa_academico WHERE id_programa = %s", (id_programa,)
+    )
+    if semestre > programa['num_sem']:
+        flash(f'El semestre no puede superar {programa["num_sem"]} para este programa.', 'warning')
+        return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
+
+    try:
+        ejecutar_consulta(
+            """INSERT INTO plan_estudio (id_programa, id_asignatura, semestre, creditos)
+               VALUES (%s, %s, %s, %s)""",
+            (id_programa, id_asignatura, semestre, creditos)
+        )
+        flash('Asignatura agregada al plan correctamente.', 'success')
+    except Exception as e:
+        flash(f'Error al agregar la asignatura: {e}', 'danger')
+
+    return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
+
 
 @configuracion_bp.route('/planes/<int:id_programa>/quitar/<int:id_plan>', methods=['POST'])
 @login_requerido
@@ -49,5 +106,3 @@ def plan_quitar(id_programa, id_plan):
     )
     flash('Asignatura quitada del plan.', 'info')
     return redirect(url_for('configuracion.plan_detalle', id_programa=id_programa))
-
-

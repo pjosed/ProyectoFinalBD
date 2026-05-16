@@ -137,7 +137,7 @@ SELECT
     da.valor_descuento,
     da.observacion,
     CONCAT(up.nombres, ' ', up.apellidos)                   AS aplicado_por,
-    da.fecha_aplicacion
+    da.fech_pub
 FROM descuento_aplicado   da
 JOIN cuenta_corriente     cc  ON da.id_cuenta     = cc.id_cuenta
 JOIN estudiante           e   ON cc.id_estudiante = e.id_estudiante
@@ -145,7 +145,7 @@ JOIN periodo_academico    pa  ON cc.id_periodo    = pa.id_periodo
 JOIN tipo_descuento       td  ON da.id_tipo       = td.id_tipo
 JOIN usuario              u   ON da.id_usuario    = u.id_usuario
 JOIN persona              up  ON u.id_persona     = up.id_persona
-ORDER BY da.fecha_aplicacion DESC;
+ORDER BY da.fech_pub DESC;
 
 
 -- ============================================================
@@ -419,6 +419,13 @@ sp_confirmar_pago_pse: BEGIN
     -- Obtener código MPAG
     SELECT id_codigo INTO v_id_codigo
     FROM codigo_detalle WHERE codigo = 'MPAG' AND grupo = 'PAGO' LIMIT 1;
+
+    -- Validar que el código MPAG exista (igual que en sp_aplicar_descuento)
+    IF v_id_codigo IS NULL THEN
+        SET o_id_pago = NULL;
+        SET o_mensaje = 'ERROR: Código MPAG no encontrado en codigo_detalle.';
+        LEAVE sp_confirmar_pago_pse;
+    END IF;
 
     -- Insertar pago
     INSERT INTO pago (id_cuenta, id_usuario, medio, ref, monto, fecha)

@@ -20,12 +20,21 @@ def lista_estudiantes():
 def crear_estudiante():
     """Muestra el formulario y procesa la creación de un estudiante."""
     if request.method == 'POST':
-        tipo_doc  = request.form.get('tipo_doc')
-        num_doc   = request.form.get('num_doc')
-        nombres   = request.form.get('nombres')
-        apellidos = request.form.get('apellidos')
-        email     = request.form.get('email')
-        telefono  = request.form.get('telefono')
+        tipo_doc  = (request.form.get('tipo_doc') or '').strip().upper()
+        num_doc   = (request.form.get('num_doc') or '').strip()
+        nombres   = (request.form.get('nombres') or '').strip()
+        apellidos = (request.form.get('apellidos') or '').strip()
+        email     = (request.form.get('email') or '').strip().lower()
+        telefono  = (request.form.get('telefono') or '').strip() or None
+
+        TIPOS_DOC_VALIDOS = ('CC', 'CE', 'TI', 'PA', 'RC')  # máx 5 chars
+        if not tipo_doc or tipo_doc not in TIPOS_DOC_VALIDOS:
+            flash(f'Tipo de documento inválido. Use: {", ".join(TIPOS_DOC_VALIDOS)}.', 'warning')
+            return render_template('estudiantes/crear.html')
+
+        if not num_doc or not nombres or not apellidos or not email:
+            flash('Todos los campos obligatorios deben completarse.', 'warning')
+            return render_template('estudiantes/crear.html')
 
         try:
             sql = """

@@ -169,9 +169,13 @@ def cuenta_corriente(id_cuenta):
     )
     total_pagos     = float(total_pagos_raw['total']) if total_pagos_raw else 0.0
     saldo_pendiente = total_cobros - total_pagos
-    diferencia      = 0.0
 
     estado = 'PENDIENTE' if saldo_pendiente > 0 else 'BALANCEADO'
+
+    # diferencia: contraste entre saldo Python y saldo acumulado de la vista.
+    # Un valor > 0 indica inconsistencia en los movimientos de la cuenta.
+    saldo_vista = movimientos[-1]['saldo_acumulado'] if movimientos else 0.0
+    diferencia  = abs(saldo_pendiente - float(saldo_vista))
 
     return render_template('cuenta/cuenta_corriente.html',
                            cuenta=cuenta,

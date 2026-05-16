@@ -558,17 +558,26 @@ WHERE vm.modalidad = 'Creditos'
 
 -- ============================================================
 -- VERIFICACIÓN FINAL
+-- Se usan subconsultas en lugar de LEFT JOIN con pago para evitar
+-- multiplicar filas cuando una cuenta tiene múltiples pagos.
 -- ============================================================
 SELECT
-    pa.nombre AS periodo,
-    prog.nombre AS programa,
-    COUNT(vm.id_volante) AS volantes,
-    SUM(vm.val_tot) AS ingreso_esperado,
-    SUM(CASE WHEN p.id_pago IS NOT NULL THEN vm.val_tot ELSE 0 END) AS ingreso_pagado,
-    COUNT(CASE WHEN p.id_pago IS NULL THEN 1 END) AS pendientes
+    pa.nombre                                           AS periodo,
+    prog.nombre                                         AS programa,
+    COUNT(vm.id_volante)                                AS volantes,
+    SUM(vm.val_tot)                                     AS ingreso_esperado,
+    SUM(CASE
+        WHEN EXISTS (
+            SELECT 1 FROM pago p WHERE p.id_cuenta = vm.id_cuenta
+        ) THEN vm.val_tot ELSE 0
+    END)                                                AS ingreso_pagado,
+    COUNT(CASE
+        WHEN NOT EXISTS (
+            SELECT 1 FROM pago p WHERE p.id_cuenta = vm.id_cuenta
+        ) THEN 1
+    END)                                                AS pendientes
 FROM volante_matricula vm
-JOIN periodo_academico pa ON pa.id_periodo = vm.id_per
+JOIN periodo_academico  pa   ON pa.id_periodo   = vm.id_per
 JOIN programa_academico prog ON prog.id_programa = vm.id_prog
-LEFT JOIN pago p ON p.id_cuenta = vm.id_cuenta
 GROUP BY pa.nombre, prog.nombre
 ORDER BY pa.nombre DESC, prog.nombre;

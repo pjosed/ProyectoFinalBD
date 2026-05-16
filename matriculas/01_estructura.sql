@@ -282,7 +282,7 @@ CREATE TABLE descuento_aplicado (
     porcentaje       DECIMAL(5,2)  NOT NULL,
     valor_descuento  DECIMAL(12,2) NOT NULL,
     observacion      VARCHAR(255),
-    fecha_aplicacion DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fech_pub DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_descuento    PRIMARY KEY (id_descuento),
     CONSTRAINT fk_desc_cuenta  FOREIGN KEY (id_cuenta)  REFERENCES cuenta_corriente(id_cuenta),
     CONSTRAINT fk_desc_tipo    FOREIGN KEY (id_tipo)    REFERENCES tipo_descuento(id_tipo),

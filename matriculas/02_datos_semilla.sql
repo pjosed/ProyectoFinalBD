@@ -914,7 +914,14 @@ FROM programa_academico p, asignatura a,
  SELECT 'MED','INV201',6,2 UNION ALL SELECT 'MED','MED501',7,4 UNION ALL
  SELECT 'MED','MED502',7,4 UNION ALL SELECT 'MED','MED601',8,4 UNION ALL
  SELECT 'MED','MED602',8,4 UNION ALL SELECT 'MED','TRA101',9,6 UNION ALL
- SELECT 'MED','TRA102',10,6) t
+ SELECT 'MED','TRA102',10,6 UNION ALL
+ -- Semestres 11 y 12: internado rotatorio
+ -- Se usan ING-E02/03/04 y EMP101 porque no están en semestres anteriores
+ SELECT 'MED','ING-E02',11,2 UNION ALL
+ SELECT 'MED','ING-E03',11,2 UNION ALL
+ SELECT 'MED','ING-E04',12,2 UNION ALL
+ SELECT 'MED','EMP101', 12,3) t
+WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 
 -- EDU-INF — Licenciatura Educación Infantil (8 semestres)
@@ -1046,3 +1053,22 @@ FROM programa_academico p, asignatura a,
  SELECT 'MAS-DER','TRA101',4,6 UNION ALL SELECT 'MAS-DER','TRA102',4,6) t
 WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 
+
+-- ============================================================
+-- USUARIO ADMINISTRADOR
+-- Contraseña: Admin2026*
+-- Hash generado con werkzeug.security.generate_password_hash('Admin2026*')
+-- Si regeneras el hash con generar_admin.py, actualiza este INSERT.
+-- ============================================================
+INSERT IGNORE INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono)
+VALUES ('CC', '0000000000', 'Administrador', 'Sistema', 'admin@unicaribe.edu.co', '3001234567');
+
+INSERT IGNORE INTO usuario (id_persona, id_rol, username, password)
+SELECT
+    p.id_persona,
+    r.id_rol,
+    'admin',
+    'scrypt:32768:8:1$uBvvaDV3gEn6rdpv$db5521a59afa5fdfe6da166104ef10251d94ef8fc82f4567c1e0c182143268fa78f3b685fa910f4c1e0c7ae80d61b7ee30d6082a8dd289ff875c4ad90c274c88'
+FROM persona p
+JOIN rol r ON r.nombre = 'ADMINISTRADOR'
+WHERE p.email = 'admin@unicaribe.edu.co';

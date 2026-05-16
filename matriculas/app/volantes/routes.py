@@ -120,9 +120,13 @@ def ajax_valor():
         if not ids_asig:
             return jsonify({'modalidad': 'POR_CREDITOS', 'valor': 0, 'creditos': 0, 'valor_credito': vpc})
         placeholders = ','.join(['%s'] * len(ids_asig))
+        # Se filtra también por id_programa para evitar sumar créditos de
+        # la misma asignatura en otros programas (la misma asig puede tener
+        # distintos créditos según el programa).
         tot = ejecutar_uno(
-            f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
-            ids_asig
+            f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe "
+            f"WHERE pe.id_asignatura IN ({placeholders}) AND pe.id_programa = %s",
+            ids_asig + [id_programa]
         )
         creditos = int(tot['total'] or 0) if tot else 0
         valor    = creditos * vpc
@@ -199,8 +203,9 @@ def volante_nuevo():
                                        periodos=periodos or [], programas=programas or [])
             placeholders = ','.join(['%s'] * len(ids_asig))
             tot = ejecutar_uno(
-                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
-                ids_asig
+                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe "
+                f"WHERE pe.id_asignatura IN ({placeholders}) AND pe.id_programa = %s",
+                ids_asig + [id_prog]
             )
             creditos  = int(tot['total'] or 0) if tot else 0
             val_tot   = creditos * float(regla['valor_credito'])
@@ -409,8 +414,9 @@ def volante_masivo():
                                        periodos=periodos or [], programas=programas or [])
             placeholders = ','.join(['%s'] * len(ids_asig))
             tot = ejecutar_uno(
-                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe WHERE pe.id_asignatura IN ({placeholders})",
-                ids_asig
+                f"SELECT SUM(pe.creditos) AS total FROM plan_estudio pe "
+                f"WHERE pe.id_asignatura IN ({placeholders}) AND pe.id_programa = %s",
+                ids_asig + [id_prog]
             )
             creditos  = int(tot['total'] or 0) if tot else 0
             val_tot   = creditos * float(regla['valor_credito'])
