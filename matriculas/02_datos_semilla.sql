@@ -815,8 +815,8 @@ INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) 
 -- Contraseñas: Supervisor2026* y Asistente2026*
 -- ============================================================
 INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
-    ('CC', '1111111111', 'Carlos',  'Supervisión Pérez', 'supervisor@unicaribe.edu.co', '3009998877'),
-    ('CC', '2222222222', 'María',   'Asistencia López',  'asistente@unicaribe.edu.co',  '3009997766');
+    ('CC', '1111111111', 'Carlos',  'Mendoza Herrera',  'supervisor@unicaribe.edu.co', '3009998877'),
+    ('CC', '2222222222', 'María',   'López Restrepo',   'asistente@unicaribe.edu.co',  '3009997766');
 
 INSERT INTO usuario (id_persona, id_rol, username, password)
 SELECT p.id_persona, r.id_rol,

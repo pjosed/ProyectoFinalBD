@@ -91,18 +91,16 @@ MENUS_POR_ROL = {
             "seccion": "Cobros",
             "icono": "bi-receipt",
             "opciones": [
-                {"label": "Generar Cobro Individual", "url": "volantes.volante_nuevo", "icono": "bi-person-check"},
+                {"label": "Generar Cobro Individual", "url": "volantes.volante_nuevo",  "icono": "bi-person-check"},
                 {"label": "Generación Masiva",        "url": "volantes.volante_masivo", "icono": "bi-people-fill"},
-                {"label": "Cuenta Corriente",         "url": "cuentas.lista_cuentas", "icono": "bi-wallet2"},
-                {"label": "Simular Pago",             "url": "cuentas.lista_cuentas", "icono": "bi-credit-card-2-front"},
             ],
         },
         {
             "seccion": "Finanzas",
             "icono": "bi-cash-stack",
             "opciones": [
-                {"label": "Ver Cuenta Corriente", "url": "cuenta.buscar",    "icono": "bi-journal-text"},
-                {"label": "Volante de Matrícula", "url": "volante.buscar",   "icono": "bi-file-earmark-text"},
+                {"label": "Ver Cuenta Corriente", "url": "cuenta.buscar",  "icono": "bi-journal-text"},
+                {"label": "Volante de Matrícula", "url": "volante.buscar", "icono": "bi-file-earmark-text"},
             ],
         },
     ],
