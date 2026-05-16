@@ -192,7 +192,10 @@ def ingreso_real():
                            filtro_periodo=id_periodo)
 
 
-# ─── Reporte 5: Créditos ──────────────────────────────────────────────────────
+# ─── Reporte 5: Crédito Financiero ───────────────────────────────────────────
+# Muestra estudiantes que tienen el código CRED (crédito ICETEX u otra entidad)
+# registrado en su cuenta corriente, con el valor del crédito y su totalización.
+# Esto representa la cartera o cuentas por cobrar a entidades financieras.
 
 @reportes_bp.route('/creditos')
 @login_requerido
@@ -202,38 +205,46 @@ def creditos():
 
     sql = """
         SELECT e.nombres, e.apellidos, e.num_doc,
-               pa.nombre AS nom_periodo,
-               p.nombre  AS nom_programa,
-               vm.semestre, vm.val_tot, vm.id_volante,
-               COUNT(va.id_vol_asig) AS num_asignaturas,
-               COALESCE((
-                   SELECT SUM(pe2.creditos)
-                   FROM volante_asignatura va2
-                   JOIN asignatura a2 ON va2.id_asig = a2.id_asignatura
-                   JOIN plan_estudio pe2 ON pe2.id_asignatura = a2.id_asignatura
-                                       AND pe2.id_programa = vm.id_prog
-                   WHERE va2.id_volante = vm.id_volante
-               ), 0) AS total_creditos
-        FROM volante_matricula  vm
-        JOIN estudiante         e  ON vm.id_estu = e.id_estudiante
-        JOIN periodo_academico  pa ON vm.id_per  = pa.id_periodo
-        JOIN programa_academico p  ON vm.id_prog = p.id_programa
-        LEFT JOIN volante_asignatura va ON va.id_volante = vm.id_volante
-        WHERE vm.modalidad = 'Creditos'
+               pa.nombre                          AS nom_periodo,
+               COALESCE(MAX(prog.nombre), '—')    AS nom_programa,
+               SUM(mc.monto)                      AS valor_credito,
+               cc.id_cuenta
+        FROM movimiento_cuenta  mc
+        JOIN codigo_detalle     cd  ON mc.id_codigo     = cd.id_codigo
+        JOIN cuenta_corriente   cc  ON mc.id_cuenta     = cc.id_cuenta
+        JOIN estudiante         e   ON cc.id_estudiante = e.id_estudiante
+        JOIN periodo_academico  pa  ON cc.id_periodo    = pa.id_periodo
+        -- Obtener el programa del último volante de la cuenta (puede no existir)
+        LEFT JOIN (
+            SELECT vm1.id_cuenta, vm1.id_prog
+            FROM volante_matricula vm1
+            INNER JOIN (
+                SELECT id_cuenta, MAX(id_volante) AS max_vol
+                FROM volante_matricula
+                GROUP BY id_cuenta
+            ) vm2 ON vm1.id_cuenta = vm2.id_cuenta
+                  AND vm1.id_volante = vm2.max_vol
+        ) vm  ON vm.id_cuenta  = cc.id_cuenta
+        LEFT JOIN programa_academico prog ON vm.id_prog = prog.id_programa
+        WHERE cd.codigo = 'CRED'
+          AND cd.grupo  = 'PAGO'
     """
     params = []
     if id_periodo:
-        sql += " AND vm.id_per = %s"
+        sql += " AND cc.id_periodo = %s"
         params.append(id_periodo)
-    sql += " GROUP BY vm.id_volante ORDER BY pa.nombre DESC, e.apellidos"
+    sql += """
+        GROUP BY e.id_estudiante, cc.id_cuenta,
+                 pa.id_periodo, pa.nombre,
+                 e.nombres, e.apellidos, e.num_doc
+        ORDER BY pa.nombre DESC, e.apellidos
+    """
 
-    filas          = ejecutar_consulta(sql, params, fetch=True) or []
-    total_valor    = sum(float(f['val_tot'])      for f in filas)
-    total_creditos = sum(int(f['total_creditos']) for f in filas)
+    filas       = ejecutar_consulta(sql, params, fetch=True) or []
+    total_valor = sum(float(f['valor_credito']) for f in filas)
 
     return render_template('reportes/creditos.html',
                            filas=filas,
                            total_valor=total_valor,
-                           total_creditos=total_creditos,
                            periodos=_get_periodos(),
                            filtro_periodo=id_periodo)

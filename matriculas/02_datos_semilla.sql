@@ -922,7 +922,6 @@ FROM programa_academico p, asignatura a,
  SELECT 'MED','ING-E04',12,2 UNION ALL
  SELECT 'MED','EMP101', 12,3) t
 WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
-WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 
 -- EDU-INF — Licenciatura Educación Infantil (8 semestres)
 INSERT INTO plan_estudio (id_programa, id_asignatura, semestre, creditos)

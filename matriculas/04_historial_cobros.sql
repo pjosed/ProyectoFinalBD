@@ -581,3 +581,59 @@ JOIN periodo_academico  pa   ON pa.id_periodo   = vm.id_per
 JOIN programa_academico prog ON prog.id_programa = vm.id_prog
 GROUP BY pa.nombre, prog.nombre
 ORDER BY pa.nombre DESC, prog.nombre;
+
+
+-- ============================================================
+-- CRÉDITOS FINANCIEROS (ICETEX U OTRA ENTIDAD)
+-- Código CRED — 5 estudiantes con crédito financiero
+-- Periodos: 2025-1 y 2025-2
+-- ============================================================
+-- Estudiantes usados (ya tienen cuenta corriente):
+--   1003001001 — Pedraza Niño     → ADM-EMP 2025-1  cobro $3.500.000
+--   1003001002 — Cifuentes Prada  → CON-PUB 2025-1  cobro $3.400.000
+--   1003001003 — Palomino Useche  → DER     2025-1  cobro $4.200.000
+--   1003001009 — Castellanos Vega → ADM-EMP 2025-2  cobro $3.600.000
+--   1003001010 — Naranjo Correa   → CON-PUB 2025-2  cobro $3.500.000
+-- El crédito cubre el 70% del valor total de matrícula.
+-- El resto ($) queda pendiente como saldo.
+-- ============================================================
+
+INSERT INTO pago (id_cuenta, id_usuario, medio, ref, monto, fecha)
+SELECT
+    cc.id_cuenta,
+    (SELECT MIN(id_usuario) FROM usuario WHERE activo = 1),
+    'CREDITO',
+    CONCAT('ICETEX-', pa.nombre, '-', e.num_doc),
+    ROUND(vm.val_tot * 0.70, 0),
+    CASE pa.nombre
+        WHEN '2025-1' THEN '2025-02-15 09:00:00'
+        ELSE               '2025-08-10 09:00:00'
+    END
+FROM estudiante e
+JOIN cuenta_corriente   cc  ON cc.id_estudiante = e.id_estudiante
+JOIN periodo_academico  pa  ON pa.id_periodo    = cc.id_periodo
+JOIN volante_matricula  vm  ON vm.id_cuenta     = cc.id_cuenta
+WHERE e.num_doc IN (
+    '1003001001','1003001002','1003001003',
+    '1003001009','1003001010'
+);
+
+-- Movimiento CRED en cuenta corriente
+INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
+SELECT
+    p.id_cuenta,
+    cd.id_codigo,
+    CONCAT('Crédito ICETEX — ', pa.nombre),
+    p.monto,
+    p.fecha,
+    p.id_usuario
+FROM pago p
+JOIN cuenta_corriente  cc  ON cc.id_cuenta  = p.id_cuenta
+JOIN periodo_academico pa  ON pa.id_periodo = cc.id_periodo
+JOIN codigo_detalle    cd  ON cd.codigo = 'CRED' AND cd.grupo = 'PAGO'
+JOIN estudiante        e   ON e.id_estudiante = cc.id_estudiante
+WHERE p.medio = 'CREDITO'
+  AND e.num_doc IN (
+      '1003001001','1003001002','1003001003',
+      '1003001009','1003001010'
+  );
