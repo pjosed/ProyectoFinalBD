@@ -479,20 +479,61 @@ FROM periodo_academico per,
  SELECT '2026-1','MAS-DER','GLOBAL',11500000.00,NULL) t
 WHERE per.nombre = t.cod_per AND prog.codigo = t.cod_prog;
 
--- Reglas 2025-2
+-- Reglas 2025-1 (todos los programas)
 INSERT INTO regla_cobro (id_periodo, id_programa, modalidad_cobro, valor_global, valor_credito)
 SELECT per.id_periodo, prog.id_programa, t.modalidad, t.v_global, t.v_credito
-FROM periodo_academico per,
-     programa_academico prog,
-(SELECT '2025-2' cod_per,'ING-SIS' cod_prog,'POR_CREDITOS' modalidad,NULL v_global,300000.00 v_credito UNION ALL
- SELECT '2025-2','ADM-EMP','GLOBAL',3600000.00,NULL UNION ALL
- SELECT '2025-2','CON-PUB','GLOBAL',3500000.00,NULL UNION ALL
- SELECT '2025-2','DER','GLOBAL',4300000.00,NULL UNION ALL
- SELECT '2025-2','PSI','GLOBAL',4000000.00,NULL UNION ALL
- SELECT '2025-2','MED','GLOBAL',8000000.00,NULL UNION ALL
- SELECT '2025-2','TEC-SIS','POR_CREDITOS',NULL,260000.00 UNION ALL
- SELECT '2025-2','ESP-GER','GLOBAL',6200000.00,NULL UNION ALL
- SELECT '2025-2','MAS-ADM','GLOBAL',11500000.00,NULL) t
+FROM periodo_academico per, programa_academico prog,
+(SELECT '2025-1' cod_per,'ING-SIS'  cod_prog,'POR_CREDITOS' modalidad, NULL    v_global, 290000.00 v_credito UNION ALL
+ SELECT '2025-1','ING-IND', 'POR_CREDITOS', NULL,    270000.00 UNION ALL
+ SELECT '2025-1','ADM-EMP', 'GLOBAL', 3500000.00, NULL UNION ALL
+ SELECT '2025-1','CON-PUB', 'GLOBAL', 3400000.00, NULL UNION ALL
+ SELECT '2025-1','DER',     'GLOBAL', 4200000.00, NULL UNION ALL
+ SELECT '2025-1','PSI',     'GLOBAL', 3900000.00, NULL UNION ALL
+ SELECT '2025-1','MED',     'GLOBAL', 7800000.00, NULL UNION ALL
+ SELECT '2025-1','ENF',     'GLOBAL', 4500000.00, NULL UNION ALL
+ SELECT '2025-1','ARQ',     'GLOBAL', 4400000.00, NULL UNION ALL
+ SELECT '2025-1','COM-SOC', 'GLOBAL', 3300000.00, NULL UNION ALL
+ SELECT '2025-1','EDU-INF', 'GLOBAL', 3000000.00, NULL UNION ALL
+ SELECT '2025-1','NEG-INT', 'GLOBAL', 3800000.00, NULL UNION ALL
+ SELECT '2025-1','TEC-SIS', 'POR_CREDITOS', NULL,    250000.00 UNION ALL
+ SELECT '2025-1','TEC-ADM', 'GLOBAL', 2600000.00, NULL UNION ALL
+ SELECT '2025-1','TEC-CON', 'GLOBAL', 2400000.00, NULL UNION ALL
+ SELECT '2025-1','ESP-GER', 'GLOBAL', 6000000.00, NULL UNION ALL
+ SELECT '2025-1','ESP-FIN', 'GLOBAL', 6500000.00, NULL UNION ALL
+ SELECT '2025-1','ESP-DER', 'GLOBAL', 6300000.00, NULL UNION ALL
+ SELECT '2025-1','ESP-TIC', 'GLOBAL', 5800000.00, NULL UNION ALL
+ SELECT '2025-1','MAS-ADM', 'GLOBAL',11000000.00, NULL UNION ALL
+ SELECT '2025-1','MAS-ING', 'GLOBAL',10500000.00, NULL UNION ALL
+ SELECT '2025-1','MAS-DER', 'GLOBAL',11000000.00, NULL) t
+WHERE per.nombre = t.cod_per AND prog.codigo = t.cod_prog;
+
+
+-- Reglas 2025-2 (todos los programas)
+INSERT INTO regla_cobro (id_periodo, id_programa, modalidad_cobro, valor_global, valor_credito)
+SELECT per.id_periodo, prog.id_programa, t.modalidad, t.v_global, t.v_credito
+FROM periodo_academico per, programa_academico prog,
+(SELECT '2025-2' cod_per,'ING-SIS' cod_prog,'POR_CREDITOS' modalidad, NULL v_global, 300000.00 v_credito UNION ALL
+ SELECT '2025-2','ING-IND', 'POR_CREDITOS', NULL,    285000.00 UNION ALL
+ SELECT '2025-2','ADM-EMP', 'GLOBAL', 3600000.00, NULL UNION ALL
+ SELECT '2025-2','CON-PUB', 'GLOBAL', 3500000.00, NULL UNION ALL
+ SELECT '2025-2','DER',     'GLOBAL', 4300000.00, NULL UNION ALL
+ SELECT '2025-2','PSI',     'GLOBAL', 4000000.00, NULL UNION ALL
+ SELECT '2025-2','MED',     'GLOBAL', 8000000.00, NULL UNION ALL
+ SELECT '2025-2','ENF',     'GLOBAL', 4600000.00, NULL UNION ALL
+ SELECT '2025-2','ARQ',     'GLOBAL', 4500000.00, NULL UNION ALL
+ SELECT '2025-2','COM-SOC', 'GLOBAL', 3400000.00, NULL UNION ALL
+ SELECT '2025-2','EDU-INF', 'GLOBAL', 3100000.00, NULL UNION ALL
+ SELECT '2025-2','NEG-INT', 'GLOBAL', 3900000.00, NULL UNION ALL
+ SELECT '2025-2','TEC-SIS', 'POR_CREDITOS', NULL,    260000.00 UNION ALL
+ SELECT '2025-2','TEC-ADM', 'GLOBAL', 2700000.00, NULL UNION ALL
+ SELECT '2025-2','TEC-CON', 'GLOBAL', 2500000.00, NULL UNION ALL
+ SELECT '2025-2','ESP-GER', 'GLOBAL', 6200000.00, NULL UNION ALL
+ SELECT '2025-2','ESP-FIN', 'GLOBAL', 6700000.00, NULL UNION ALL
+ SELECT '2025-2','ESP-DER', 'GLOBAL', 6500000.00, NULL UNION ALL
+ SELECT '2025-2','ESP-TIC', 'GLOBAL', 6000000.00, NULL UNION ALL
+ SELECT '2025-2','MAS-ADM', 'GLOBAL',11500000.00, NULL UNION ALL
+ SELECT '2025-2','MAS-ING', 'GLOBAL',10700000.00, NULL UNION ALL
+ SELECT '2025-2','MAS-DER', 'GLOBAL',11200000.00, NULL) t
 WHERE per.nombre = t.cod_per AND prog.codigo = t.cod_prog;
 
 
@@ -500,32 +541,297 @@ WHERE per.nombre = t.cod_per AND prog.codigo = t.cod_prog;
 -- ESTUDIANTES DE PRUEBA (20 estudiantes)
 -- ============================================================
 INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
-    ('CC','1001234501','Valentina', 'Torres Sánchez',   'vtorres@estudiante.edu.co',    '3101112233'),
-    ('CC','1001234502','Juan',      'Ramos Díaz',       'jramos@estudiante.edu.co',     '3112223344'),
-    ('CC','1001234503','Sofía',     'Castro Mejía',     'scastro@estudiante.edu.co',    '3123334455'),
-    ('CC','1001234504','Miguel',    'Vargas López',     'mvargas@estudiante.edu.co',    '3134445566'),
-    ('CC','1001234505','Camila',    'Herrera Ríos',     'cherrera@estudiante.edu.co',   '3145556677'),
-    ('CC','1001234506','Andrés',    'Morales Peña',     'amorales@estudiante.edu.co',   '3156667788'),
-    ('CC','1001234507','Isabella',  'González Ruiz',    'igonzalez@estudiante.edu.co',  '3167778899'),
-    ('CC','1001234508','Sebastián', 'Martínez Flores',  'smartinez@estudiante.edu.co',  '3178889900'),
-    ('CC','1001234509','Daniela',   'Jiménez Ortiz',    'djimenez@estudiante.edu.co',   '3189990011'),
-    ('CC','1001234510','Mateo',     'Rodríguez Silva',  'mrodriguez@estudiante.edu.co', '3190001122'),
-    ('CC','1001234511','Valeria',   'Fernández Cruz',   'vfernandez@estudiante.edu.co', '3201112233'),
-    ('CC','1001234512','Santiago',  'López Bermúdez',   'slopez@estudiante.edu.co',     '3212223344'),
-    ('CC','1001234513','Mariana',   'García Pardo',     'mgarcia@estudiante.edu.co',    '3223334455'),
-    ('CC','1001234514','Nicolás',   'Reyes Campos',     'nreyes@estudiante.edu.co',     '3234445566'),
-    ('CC','1001234515','Gabriela',  'Muñoz Serrano',    'gmunoz@estudiante.edu.co',     '3245556677'),
-    ('CE','1001234516','Carlos',    'Mendoza Arbeláez', 'cmendoza@estudiante.edu.co',   '3256667788'),
-    ('CC','1001234517','Laura',     'Quintero Vásquez', 'lquintero@estudiante.edu.co',  '3267778899'),
-    ('CC','1001234518','David',     'Aguilar Montoya',  'daguilar@estudiante.edu.co',   '3278889900'),
-    ('CC','1001234519','Sara',      'Peña Castellanos', 'spena@estudiante.edu.co',      '3289990011'),
-    ('CC','1001234520','Felipe',    'Cardona Ríos',     'fcardona@estudiante.edu.co',   '3290001122');
+    ('CC','1001234501','Valentina',  'Torres Sánchez',    'vtorres@estudiante.edu.co',     '3101112233'),
+    ('CC','1001234502','Juan Pablo', 'Ramos Díaz',        'jpramos@estudiante.edu.co',     '3112223344'),
+    ('CC','1001234503','Sofía',      'Castro Mejía',      'scastro@estudiante.edu.co',     '3123334455'),
+    ('CC','1001234504','Miguel',     'Vargas López',      'mvargas@estudiante.edu.co',     '3134445566'),
+    ('CC','1001234505','Camila',     'Herrera Ríos',      'cherrera@estudiante.edu.co',    '3145556677'),
+    ('CC','1001234506','Andrés',     'Morales Peña',      'amorales@estudiante.edu.co',    '3156667788'),
+    ('CC','1001234507','Isabella',   'González Ruiz',     'igonzalez@estudiante.edu.co',   '3167778899'),
+    ('CC','1001234508','Sebastián',  'Martínez Flores',   'smartinez@estudiante.edu.co',   '3178889900'),
+    ('CC','1001234509','Daniela',    'Jiménez Ortiz',     'djimenez@estudiante.edu.co',    '3189990011'),
+    ('CC','1001234510','Mateo',      'Rodríguez Silva',   'mrodriguez@estudiante.edu.co',  '3190001122'),
+    ('CC','1001234511','Valeria',    'Fernández Cruz',    'vfernandez@estudiante.edu.co',  '3201112233'),
+    ('CC','1001234512','Santiago',   'López Bermúdez',    'slopez@estudiante.edu.co',      '3212223344'),
+    ('CC','1001234513','Mariana',    'García Pardo',      'mgarcia@estudiante.edu.co',     '3223334455'),
+    ('CC','1001234514','Nicolás',    'Reyes Campos',      'nreyes@estudiante.edu.co',      '3234445566'),
+    ('CC','1001234515','Gabriela',   'Muñoz Serrano',     'gmunoz@estudiante.edu.co',      '3245556677'),
+    ('CE','1001234516','Carlos',     'Mendoza Arbeláez',  'cmendoza@estudiante.edu.co',    '3256667788'),
+    ('CC','1001234517','Laura',      'Quintero Vásquez',  'lquintero@estudiante.edu.co',   '3267778899'),
+    ('CC','1001234518','David',      'Aguilar Montoya',   'daguilar@estudiante.edu.co',    '3278889900'),
+    ('CC','1001234519','Sara',       'Peña Castellanos',  'spena@estudiante.edu.co',       '3289990011'),
+    ('CC','1001234520','Felipe',     'Cardona Ríos',      'fcardona@estudiante.edu.co',    '3290001122');
+
 
 -- ============================================================
--- NOTA: El usuario ADMINISTRADOR se crea ejecutando:
---   python generar_admin.py
--- desde la carpeta matriculas/ y pegando el SQL generado.
+-- ESTUDIANTES ADICIONALES (10 por programa, nombres únicos y reales)
 -- ============================================================
+INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
+-- ING-SIS
+('CC','1002000001','Alejandro',  'Pedraza Niño',        'apedraza@estudiante.edu.co',     '3001001001'),
+('CC','1002000002','Natalia',    'Cifuentes Prada',     'ncifuentes@estudiante.edu.co',   '3001001002'),
+('CC','1002000003','Ricardo',    'Palomino Useche',     'rpalomino@estudiante.edu.co',    '3001001003'),
+('CC','1002000004','Paola',      'Acosta Barrera',      'pacosta@estudiante.edu.co',      '3001001004'),
+('CC','1002000005','Cristian',   'Bohórquez Leal',      'cbohorquez@estudiante.edu.co',   '3001001005'),
+('CC','1002000006','Luisa',      'Serrano Palacios',    'lserrano@estudiante.edu.co',     '3001001006'),
+('CC','1002000007','Esteban',    'Amaya Contreras',     'eamaya@estudiante.edu.co',       '3001001007'),
+('CC','1002000008','Juliana',    'Becerra Pinzón',      'jbecerra@estudiante.edu.co',     '3001001008'),
+('CC','1002000009','Héctor',     'Fuentes Alvarado',    'hfuentes@estudiante.edu.co',     '3001001009'),
+('CC','1002000010','Marcela',    'Iglesias Buitrago',   'miglesias@estudiante.edu.co',    '3001001010'),
+-- ING-IND
+('CC','1002001001','Omar',       'Castellanos Vega',    'ocastellanos@estudiante.edu.co', '3001002001'),
+('CC','1002001002','Patricia',   'Naranjo Correa',      'pnaranjo@estudiante.edu.co',     '3001002002'),
+('CC','1002001003','Germán',     'Suárez Triana',       'gsuarez@estudiante.edu.co',      '3001002003'),
+('CC','1002001004','Claudia',    'Rangel Mendoza',      'crangel@estudiante.edu.co',      '3001002004'),
+('CC','1002001005','Iván',       'Portilla Sandoval',   'iportillb@estudiante.edu.co',    '3001002005'),
+('CC','1002001006','Andrea',     'Solano Villamizar',   'asolanob@estudiante.edu.co',     '3001002006'),
+('CC','1002001007','Rodrigo',    'Pineda Ballén',       'rpineda@estudiante.edu.co',      '3001002007'),
+('CC','1002001008','Carolina',   'Hurtado Jaimes',      'churtado@estudiante.edu.co',     '3001002008'),
+('CC','1002001009','Álvaro',     'Quintana Flórez',     'aquintana@estudiante.edu.co',    '3001002009'),
+('CC','1002001010','Tatiana',    'Villegas Moncayo',    'tvillegas@estudiante.edu.co',    '3001002010'),
+-- ADM-EMP
+('CC','1002002001','Mauricio',   'Arias Bedoya',        'marias@estudiante.edu.co',       '3001003001'),
+('CC','1002002002','Xiomara',    'Peláez Giraldo',      'xpelaez@estudiante.edu.co',      '3001003002'),
+('CC','1002002003','Fernando',   'Ochoa Restrepo',      'fochoa@estudiante.edu.co',       '3001003003'),
+('CC','1002002004','Stephanie',  'Correa Holguín',      'scorrea@estudiante.edu.co',      '3001003004'),
+('CC','1002002005','Jhon',       'Medina Acevedo',      'jmedina@estudiante.edu.co',      '3001003005'),
+('CC','1002002006','Lina',       'Tobón Cardona',       'ltobon@estudiante.edu.co',       '3001003006'),
+('CC','1002002007','Andrés',     'Urrego Zapata',       'aurrego@estudiante.edu.co',      '3001003007'),
+('CC','1002002008','Melissa',    'Zuluaga Jaramillo',   'mzuluaga@estudiante.edu.co',     '3001003008'),
+('CC','1002002009','Gustavo',    'Londoño Vélez',       'glondono@estudiante.edu.co',     '3001003009'),
+('CC','1002002010','Adriana',    'Sepúlveda Muñoz',     'asepulveda@estudiante.edu.co',   '3001003010'),
+-- CON-PUB
+('CC','1002003001','Harold',     'Ballesteros Díaz',    'hballesteros@estudiante.edu.co', '3001004001'),
+('CC','1002003002','Yesenia',    'Carrillo Ávila',      'ycarrillo@estudiante.edu.co',    '3001004002'),
+('CC','1002003003','Camilo',     'Sánchez Toro',        'csanchezt@estudiante.edu.co',    '3001004003'),
+('CC','1002003004','Leidy',      'Bernal Pardo',        'lbernal@estudiante.edu.co',      '3001004004'),
+('CC','1002003005','Julio',      'Arbeláez Figueroa',   'jarbelaez@estudiante.edu.co',    '3001004005'),
+('CC','1002003006','Angélica',   'Varón Castro',        'avaron@estudiante.edu.co',       '3001004006'),
+('CC','1002003007','Wilmer',     'Garzón Pulido',       'wgarzon@estudiante.edu.co',      '3001004007'),
+('CC','1002003008','Bibiana',    'Moreno Salamanca',    'bmoreno@estudiante.edu.co',      '3001004008'),
+('CC','1002003009','Édgar',      'Ríos Chaparro',       'erios@estudiante.edu.co',        '3001004009'),
+('CC','1002003010','Sonia',      'Delgado Riveros',     'sdelgado@estudiante.edu.co',     '3001004010'),
+-- DER
+('CC','1002004001','Hernán',     'Rincón Agudelo',      'hrincon@estudiante.edu.co',      '3001005001'),
+('CC','1002004002','Lorena',     'Parra Camacho',       'lparra@estudiante.edu.co',       '3001005002'),
+('CC','1002004003','Álvaro',     'Nieto Fonseca',       'anieto@estudiante.edu.co',       '3001005003'),
+('CC','1002004004','Gloria',     'Trujillo Bonilla',    'gtrujillo@estudiante.edu.co',    '3001005004'),
+('CC','1002004005','Mauricio',   'Alarcón Vargas',      'malarcon@estudiante.edu.co',     '3001005005'),
+('CC','1002004006','Pilar',      'Cuervo Méndez',       'pcuervo@estudiante.edu.co',      '3001005006'),
+('CC','1002004007','Leonardo',   'Mahecha Quiroga',     'lmahecha@estudiante.edu.co',     '3001005007'),
+('CC','1002004008','Diana',      'Téllez Rojas',        'dtellez@estudiante.edu.co',      '3001005008'),
+('CC','1002004009','Fabián',     'Useche Cortés',       'fuseche@estudiante.edu.co',      '3001005009'),
+('CC','1002004010','Nohora',     'Pinzón Galindo',      'npinzon@estudiante.edu.co',      '3001005010'),
+-- PSI
+('CC','1002005001','Sergio',     'Muñoz Espinosa',      'smunoz@estudiante.edu.co',       '3001006001'),
+('CC','1002005002','Milena',     'Cardozo Buitrago',    'mcardozo@estudiante.edu.co',     '3001006002'),
+('CC','1002005003','Jhonatan',   'Poveda Roa',          'jpoveda@estudiante.edu.co',      '3001006003'),
+('CC','1002005004','Leidy',      'Sanabria Torres',     'lsanabria@estudiante.edu.co',    '3001006004'),
+('CC','1002005005','Andrés',     'Chaparro Flórez',     'achaparro@estudiante.edu.co',    '3001006005'),
+('CC','1002005006','Sandra',     'Olaya Cárdenas',      'solaya@estudiante.edu.co',       '3001006006'),
+('CC','1002005007','Tomás',      'Herrera Pedraza',     'therrera@estudiante.edu.co',     '3001006007'),
+('CC','1002005008','Yuri',       'Bautista Díaz',       'ybautista@estudiante.edu.co',    '3001006008'),
+('CC','1002005009','Eduardo',    'Castellanos Prieto',  'ecastellanos@estudiante.edu.co', '3001006009'),
+('CC','1002005010','Paola',      'Flórez Montiel',      'pflorez@estudiante.edu.co',      '3001006010'),
+-- MED
+('CC','1002006001','Catalina',   'Vásquez Guerrero',    'cvasquez@estudiante.edu.co',     '3001007001'),
+('CC','1002006002','Ernesto',    'Peñuela Barragán',    'epenuelas@estudiante.edu.co',    '3001007002'),
+('CC','1002006003','Margarita',  'Sandoval Reyes',      'msandoval@estudiante.edu.co',    '3001007003'),
+('CC','1002006004','Germán',     'Lozada Ruiz',         'glozada@estudiante.edu.co',      '3001007004'),
+('CC','1002006005','Estefanía',  'Molina Hoyos',        'emolina@estudiante.edu.co',      '3001007005'),
+('CC','1002006006','Wilson',     'Prado Gamboa',        'wprado@estudiante.edu.co',       '3001007006'),
+('CC','1002006007','Liliana',    'Rojas Sabogal',       'lrojas@estudiante.edu.co',       '3001007007'),
+('CC','1002006008','Nicolás',    'Ariza Porras',        'nariza@estudiante.edu.co',       '3001007008'),
+('CC','1002006009','Yamile',     'Fonseca Blanco',      'yfonseca@estudiante.edu.co',     '3001007009'),
+('CC','1002006010','Sebastián',  'Téllez Wilches',      'stellez@estudiante.edu.co',      '3001007010'),
+-- ENF
+('CC','1002007001','Alejandra',  'Ceballos Hurtado',    'aceballos@estudiante.edu.co',    '3001008001'),
+('CC','1002007002','Jorge',      'Navarrete Uribe',     'jnavarrete@estudiante.edu.co',   '3001008002'),
+('CC','1002007003','Nubia',      'Alvarado Pinto',      'nalvarado@estudiante.edu.co',    '3001008003'),
+('CC','1002007004','William',    'Salazar Vergara',     'wsalazar@estudiante.edu.co',     '3001008004'),
+('CC','1002007005','Bibiana',    'Ramos Guerrero',      'bramos@estudiante.edu.co',       '3001008005'),
+('CC','1002007006','Oswaldo',    'Suescún Lara',        'osuescun@estudiante.edu.co',     '3001008006'),
+('CC','1002007007','Cindy',      'Bermúdez Acero',      'cbermudez@estudiante.edu.co',    '3001008007'),
+('CC','1002007008','Camilo',     'Montes Parra',        'cmontes@estudiante.edu.co',      '3001008008'),
+('CC','1002007009','Adriana',    'Guzmán Peña',         'aguzman@estudiante.edu.co',      '3001008009'),
+('CC','1002007010','Jonathan',   'Caro Pineda',         'jcaro@estudiante.edu.co',        '3001008010'),
+-- ARQ
+('CC','1002008001','Sebastián',  'Barreto Amaya',       'sbarreto@estudiante.edu.co',     '3001009001'),
+('CC','1002008002','Viviana',    'Ortega Duque',        'vortega@estudiante.edu.co',      '3001009002'),
+('CC','1002008003','David',      'Restrepo Cano',       'drestrepo@estudiante.edu.co',    '3001009003'),
+('CC','1002008004','Katherine',  'Mejía Zapata',        'kmejia@estudiante.edu.co',       '3001009004'),
+('CC','1002008005','Julián',     'Caicedo Ríos',        'jcaicedo@estudiante.edu.co',     '3001009005'),
+('CC','1002008006','Tatiana',    'Bernal Forero',       'tbernal@estudiante.edu.co',      '3001009006'),
+('CC','1002008007','Andrés',     'Moreno Velandia',     'amorenov@estudiante.edu.co',     '3001009007'),
+('CC','1002008008','Lina',       'Prada Medina',        'lprada@estudiante.edu.co',       '3001009008'),
+('CC','1002008009','Daniel',     'Vargas Caballero',    'dvargasc@estudiante.edu.co',     '3001009009'),
+('CC','1002008010','Ingrid',     'Orozco Estrada',      'iorozco@estudiante.edu.co',      '3001009010'),
+-- COM-SOC
+('CC','1002009001','Felipe',     'Salcedo Rondón',      'fsalcedo@estudiante.edu.co',     '3001010001'),
+('CC','1002009002','Ángela',     'Bedoya Mosquera',     'abedoya@estudiante.edu.co',      '3001010002'),
+('CC','1002009003','Mauricio',   'Vergara Llano',       'mvergara@estudiante.edu.co',     '3001010003'),
+('CC','1002009004','Nathalia',   'Ospina Muñoz',        'nospina@estudiante.edu.co',      '3001010004'),
+('CC','1002009005','Carlos',     'Henao Agudelo',       'chenao@estudiante.edu.co',       '3001010005'),
+('CC','1002009006','Marcela',    'Ríos Londoño',        'mriosb@estudiante.edu.co',       '3001010006'),
+('CC','1002009007','Jhon',       'Parra Cardona',       'jparrac@estudiante.edu.co',      '3001010007'),
+('CC','1002009008','Sandra',     'Acosta Soto',         'sacosta@estudiante.edu.co',      '3001010008'),
+('CC','1002009009','Hernán',     'Giraldo Vélez',       'hgiraldo@estudiante.edu.co',     '3001010009'),
+('CC','1002009010','Paola',      'Montaño Díaz',        'pmontano@estudiante.edu.co',     '3001010010'),
+-- EDU-INF
+('CC','1002010001','Luz',        'Marina Rueda',        'lrueda@estudiante.edu.co',       '3001011001'),
+('CC','1002010002','Elkin',      'Pulido Gómez',        'epulido@estudiante.edu.co',      '3001011002'),
+('CC','1002010003','Yolanda',    'Cifuentes Mora',      'ycifuentes@estudiante.edu.co',   '3001011003'),
+('CC','1002010004','Javier',     'Toro Gallego',        'jtoro@estudiante.edu.co',        '3001011004'),
+('CC','1002010005','Gloria',     'Ávila Zamora',        'gavila@estudiante.edu.co',       '3001011005'),
+('CC','1002010006','Rodrigo',    'Gutiérrez Ramos',     'rgutierrezb@estudiante.edu.co',  '3001011006'),
+('CC','1002010007','Martha',     'Soto Guevara',        'msoto@estudiante.edu.co',        '3001011007'),
+('CC','1002010008','Félix',      'Baquero Nieto',       'fbaquero@estudiante.edu.co',     '3001011008'),
+('CC','1002010009','Ingrid',     'Díaz Melo',           'idiaz@estudiante.edu.co',        '3001011009'),
+('CC','1002010010','Andrés',     'Castillo Prado',      'acastillo@estudiante.edu.co',    '3001011010'),
+-- NEG-INT
+('CC','1002011001','Melissa',    'Sarmiento Peña',      'msarmiento@estudiante.edu.co',   '3001012001'),
+('CC','1002011002','Jorge',      'Cabrera Fajardo',     'jcabrera@estudiante.edu.co',     '3001012002'),
+('CC','1002011003','Diana',      'Muñoz Galindo',       'dmunoz@estudiante.edu.co',       '3001012003'),
+('CC','1002011004','Santiago',   'Guerrero Pinto',      'sguerrero@estudiante.edu.co',    '3001012004'),
+('CC','1002011005','Vanessa',    'Cárdenas Bohórquez',  'vcardenas@estudiante.edu.co',    '3001012005'),
+('CC','1002011006','Ricardo',    'Mora Arévalo',        'rmorab@estudiante.edu.co',       '3001012006'),
+('CC','1002011007','Camila',     'Pérez Holguín',       'cperez@estudiante.edu.co',       '3001012007'),
+('CC','1002011008','Andrés',     'Neira Vásquez',       'aneira@estudiante.edu.co',       '3001012008'),
+('CC','1002011009','Juliana',    'Barón Quintero',      'jbaron@estudiante.edu.co',       '3001012009'),
+('CC','1002011010','Wilson',     'Forero Sánchez',      'wforero@estudiante.edu.co',      '3001012010'),
+-- TEC-SIS extra
+('CC','1002012001','Kevin',      'Medina Salazar',      'kmedina@estudiante.edu.co',      '3001013001'),
+('CC','1002012002','Laura',      'Vergara Triana',      'lvergarab@estudiante.edu.co',    '3001013002'),
+('CC','1002012003','Darío',      'Bernal Casas',        'dbernal@estudiante.edu.co',      '3001013003'),
+('CC','1002012004','Natalia',    'Hurtado Prieto',      'nhurtado@estudiante.edu.co',     '3001013004'),
+('CC','1002012005','Cristóbal',  'Arango Ochoa',        'carangob@estudiante.edu.co',     '3001013005'),
+('CC','1002012006','Johanna',    'Páez Riveros',        'jpaez@estudiante.edu.co',        '3001013006'),
+('CC','1002012008','Fabio',      'Leal Romero',         'fleal@estudiante.edu.co',        '3001013008'),
+('CC','1002012009','Adriana',    'Pinto Castellanos',   'apintob@estudiante.edu.co',      '3001013009'),
+('CC','1002012010','Tomás',      'Suárez Niño',         'tsuarez@estudiante.edu.co',      '3001013010'),
+-- TEC-ADM
+('CC','1002013001','Yesid',      'Cano Bermúdez',       'ycanob@estudiante.edu.co',       '3001014001'),
+('CC','1002013002','Luisa',      'Varón Aguilar',       'lvaron@estudiante.edu.co',       '3001014002'),
+('CC','1002013003','Óscar',      'Reyes Morales',       'oreyes@estudiante.edu.co',       '3001014003'),
+('CC','1002013004','Claudia',    'Ríos Obando',         'criosb@estudiante.edu.co',       '3001014004'),
+('CC','1002013005','Edwin',      'Solano Rueda',        'esolano@estudiante.edu.co',      '3001014005'),
+('CC','1002013006','Paola',      'Cadena Flórez',       'pcadena@estudiante.edu.co',      '3001014006'),
+('CC','1002013007','Javier',     'Ospina Rincón',       'jospinabc@estudiante.edu.co',    '3001014007'),
+('CC','1002013008','Bibiana',    'Herrera Acosta',      'bherrera@estudiante.edu.co',     '3001014008'),
+('CC','1002013009','Carlos',     'Pedraza Clavijo',     'cpedrazab@estudiante.edu.co',    '3001014009'),
+('CC','1002013010','Angela',     'Guzmán Torres',       'aguzmanb@estudiante.edu.co',     '3001014010'),
+-- TEC-CON
+('CC','1002014001','Fredy',      'Alarcón Useche',      'falarcon@estudiante.edu.co',     '3001015001'),
+('CC','1002014002','Esperanza',  'Morales Pinzón',      'emorales@estudiante.edu.co',     '3001015002'),
+('CC','1002014003','Jesús',      'Montoya Bernal',      'jmontoya@estudiante.edu.co',     '3001015003'),
+('CC','1002014004','Silvia',     'Castaño Díaz',        'scastanob@estudiante.edu.co',    '3001015004'),
+('CC','1002014005','Ramiro',     'Gómez Londoño',       'rgomez@estudiante.edu.co',       '3001015005'),
+('CC','1002014006','Yolanda',    'Pabón Serrano',       'ypabon@estudiante.edu.co',       '3001015006'),
+('CC','1002014007','Hernando',   'Acosta Guerrero',     'hacosta@estudiante.edu.co',      '3001015007'),
+('CC','1002014008','Patricia',   'Rojas Ávila',         'projasb@estudiante.edu.co',      '3001015008'),
+('CC','1002014009','Álvaro',     'Nieto Salcedo',       'anietob@estudiante.edu.co',      '3001015009'),
+('CC','1002014010','Constanza',  'Duque Marín',         'cduque@estudiante.edu.co',       '3001015010'),
+-- ESP-GER extra
+('CC','1002015001','Rodrigo',    'Arbeláez Dávila',     'rarbelaez@estudiante.edu.co',    '3001016001'),
+('CC','1002015002','Claudia',    'Sánchez Wilches',     'csanchezb@estudiante.edu.co',    '3001016002'),
+('CC','1002015003','Álvaro',     'Peña Guerrero',       'apenab@estudiante.edu.co',       '3001016003'),
+('CC','1002015004','Mónica',     'Florián Cárdenas',    'mflorian@estudiante.edu.co',     '3001016004'),
+('CC','1002015005','Ernesto',    'Vargas Quintero',     'evargasb@estudiante.edu.co',     '3001016005'),
+('CC','1002015006','Ximena',     'Mahecha Prado',       'xmahecha@estudiante.edu.co',     '3001016006'),
+('CC','1002015007','Fabián',     'Castro Betancourt',   'fcastrob@estudiante.edu.co',     '3001016007'),
+('CC','1002015008','Adriana',    'Lozano Amaya',        'alozanob@estudiante.edu.co',     '3001016008'),
+('CC','1002015009','Camilo',     'Guzmán Bermúdez',     'cguzman@estudiante.edu.co',      '3001016009'),
+('CC','1002015010','Stefania',   'Caro Medina',         'scarob@estudiante.edu.co',       '3001016010'),
+-- ESP-FIN
+('CC','1002016001','Mauricio',   'Prado Villegas',      'mpradb@estudiante.edu.co',       '3001017001'),
+('CC','1002016002','Lorena',     'Duarte Cifuentes',    'lduarte@estudiante.edu.co',      '3001017002'),
+('CC','1002016003','Gabriel',    'Téllez Barón',        'gtellez@estudiante.edu.co',      '3001017003'),
+('CC','1002016004','Liliana',    'Ospina Castaño',      'lospinad@estudiante.edu.co',     '3001017004'),
+('CC','1002016005','Fernando',   'Rincón Sabogal',      'frincon@estudiante.edu.co',      '3001017005'),
+('CC','1002016006','Carolina',   'Vega Acevedo',        'cvega@estudiante.edu.co',        '3001017006'),
+('CC','1002016007','Héctor',     'Bedoya Restrepo',     'hbedoya@estudiante.edu.co',      '3001017007'),
+('CC','1002016008','Andrea',     'Flórez Ríos',         'aflorezb@estudiante.edu.co',     '3001017008'),
+('CC','1002016009','Julián',     'Ríos Barreto',        'jriosb@estudiante.edu.co',       '3001017009'),
+('CC','1002016010','Sandra',     'Molina Gutiérrez',    'smolinab@estudiante.edu.co',     '3001017010'),
+-- ESP-DER
+('CC','1002017001','Édgar',      'Bernal Páez',         'ebernal@estudiante.edu.co',      '3001018001'),
+('CC','1002017002','Pilar',      'Moreno Fonseca',      'pmorenob@estudiante.edu.co',     '3001018002'),
+('CC','1002017003','William',    'Suárez Herrera',      'wsuarez@estudiante.edu.co',      '3001018003'),
+('CC','1002017004','Ángela',     'Nieto Bonilla',       'anietob2@estudiante.edu.co',     '3001018004'),
+('CC','1002017005','Iván',       'Cárdenas Pérez',      'icardenas@estudiante.edu.co',    '3001018005'),
+('CC','1002017006','Natalia',    'Arango Salcedo',      'narangob@estudiante.edu.co',     '3001018006'),
+('CC','1002017007','Oswaldo',    'Vergara Pineda',      'overgara@estudiante.edu.co',     '3001018007'),
+('CC','1002017008','Diana',      'Pulido Montoya',      'dpulido@estudiante.edu.co',      '3001018008'),
+('CC','1002017009','Rodrigo',    'Guevara Salinas',     'rguevara@estudiante.edu.co',     '3001018009'),
+('CC','1002017010','Leidy',      'Chaparro Useche',     'lchaparro@estudiante.edu.co',    '3001018010'),
+-- ESP-TIC
+('CC','1002018001','Cristian',   'Pabón Acosta',        'cpabon@estudiante.edu.co',       '3001019001'),
+('CC','1002018002','Vanessa',    'Forero Rueda',        'vforero@estudiante.edu.co',      '3001019002'),
+('CC','1002018003','Sergio',     'Muñoz Barragán',      'smunozb@estudiante.edu.co',      '3001019003'),
+('CC','1002018004','Johanna',    'Roa Pinzón',          'jroab@estudiante.edu.co',        '3001019004'),
+('CC','1002018005','Kevin',      'Alarcón Herrera',     'kalarcon@estudiante.edu.co',     '3001019005'),
+('CC','1002018006','Melissa',    'Castro Giraldo',      'mcastrob@estudiante.edu.co',     '3001019006'),
+('CC','1002018007','Darío',      'Pedraza Varón',       'dpedraza@estudiante.edu.co',     '3001019007'),
+('CC','1002018008','Adriana',    'Londoño Triana',      'alondono@estudiante.edu.co',     '3001019008'),
+('CC','1002018009','Edwin',      'Sarmiento Mora',      'esarmiento@estudiante.edu.co',   '3001019009'),
+('CC','1002018010','Paola',      'Vásquez Cano',        'pvasquez@estudiante.edu.co',     '3001019010'),
+-- MAS-ADM extra
+('CC','1002019001','Gustavo',    'Hurtado Arbeláez',    'ghurtado@estudiante.edu.co',     '3001020001'),
+('CC','1002019002','Claudia',    'Espinosa Holguín',    'cespinosa@estudiante.edu.co',    '3001020002'),
+('CC','1002019003','Hernán',     'Tobón Castaño',       'htobon@estudiante.edu.co',       '3001020003'),
+('CC','1002019004','Mónica',     'Zapata Restrepo',     'mzapata@estudiante.edu.co',      '3001020004'),
+('CC','1002019005','Leonardo',   'Acevedo Giraldo',     'lacevedo@estudiante.edu.co',     '3001020005'),
+('CC','1002019006','Patricia',   'Wilches Flórez',      'pwilches@estudiante.edu.co',     '3001020006'),
+('CC','1002019007','Germán',     'Ríos Betancourt',     'griosb@estudiante.edu.co',       '3001020007'),
+('CC','1002019008','Ximena',     'Caicedo Bermúdez',    'xcaicedo@estudiante.edu.co',     '3001020008'),
+('CC','1002019009','Fabián',     'Lozano Guerrero',     'flozano@estudiante.edu.co',      '3001020009'),
+('CC','1002019010','Carolina',   'Medina Sabogal',      'cmedinabc@estudiante.edu.co',    '3001020010'),
+-- MAS-ING
+('CC','1002020001','Álvaro',     'Gaviria Montoya',     'agaviria@estudiante.edu.co',     '3001021001'),
+('CC','1002020002','Stefania',   'Bonilla Duque',       'sbonilla@estudiante.edu.co',     '3001021002'),
+('CC','1002020003','Harold',     'Pineda Caro',         'hpineda@estudiante.edu.co',      '3001021003'),
+('CC','1002020004','Lina',       'Guerrero Páez',       'lguerrero@estudiante.edu.co',    '3001021004'),
+('CC','1002020005','Julio',      'Amaya Vergara',       'jamayab@estudiante.edu.co',      '3001021005'),
+('CC','1002020006','Yesenia',    'Rodríguez Pabón',     'yrodriguez@estudiante.edu.co',   '3001021006'),
+('CC','1002020007','Camilo',     'Fajardo Rincón',      'cfajardo@estudiante.edu.co',     '3001021007'),
+('CC','1002020008','Bibiana',    'Ariza Soto',          'barizab@estudiante.edu.co',      '3001021008'),
+('CC','1002020009','Tomás',      'Cuervo Salcedo',      'tcuervo@estudiante.edu.co',      '3001021009'),
+('CC','1002020010','Sandra',     'Mahecha Villegas',    'smahecha@estudiante.edu.co',     '3001021010'),
+-- MAS-DER
+('CC','1002021001','Rodrigo',    'Espinosa Barreto',    'respinosa@estudiante.edu.co',    '3001022001'),
+('CC','1002021002','Gloria',     'Navarrete Prado',     'gnavarrete@estudiante.edu.co',   '3001022002'),
+('CC','1002021003','Wilson',     'Peláez Nieto',        'wpelaez@estudiante.edu.co',      '3001022003'),
+('CC','1002021004','Diana',      'Cardozo Useche',      'dcardozo@estudiante.edu.co',     '3001022004'),
+('CC','1002021005','Fernando',   'Sánchez Guzmán',      'fsanchezb@estudiante.edu.co',    '3001022005'),
+('CC','1002021006','Yolanda',    'Vásquez Herrera',     'yvasquez@estudiante.edu.co',     '3001022006'),
+('CC','1002021007','Ernesto',    'Roa Florián',         'eroa@estudiante.edu.co',         '3001022007'),
+('CC','1002021008','Pilar',      'Bernal Agudelo',      'pbernal@estudiante.edu.co',      '3001022008'),
+('CC','1002021009','Mauricio',   'Delgado Camacho',     'mdelgado@estudiante.edu.co',     '3001022009'),
+('CC','1002021010','Marcela',    'Téllez Bedoya',       'mtellez@estudiante.edu.co',      '3001022010');
+
+
+-- ============================================================
+-- USUARIOS DE PRUEBA (SUPERVISOR y ASISTENTE)
+-- Contraseñas: Supervisor2026* y Asistente2026*
+-- ============================================================
+INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
+    ('CC', '1111111111', 'Carlos',  'Supervisión Pérez', 'supervisor@unicaribe.edu.co', '3009998877'),
+    ('CC', '2222222222', 'María',   'Asistencia López',  'asistente@unicaribe.edu.co',  '3009997766');
+
+INSERT INTO usuario (id_persona, id_rol, username, password)
+SELECT p.id_persona, r.id_rol,
+       'supervisor',
+       'scrypt:32768:8:1$NjEHlvuzcn2kQCxB$bcd31cc8a6059fe7301ff78bc9e5fbc82e6daf0a0972a890e20b66123ed14c6183e930ecc9afa0e6f97c4d9369875cd1e14c54c45d447aeefa849ebb675ded35'
+FROM persona p JOIN rol r ON r.nombre = 'SUPERVISOR'
+WHERE p.email = 'supervisor@unicaribe.edu.co';
+
+INSERT INTO usuario (id_persona, id_rol, username, password)
+SELECT p.id_persona, r.id_rol,
+       'asistente',
+       'scrypt:32768:8:1$Q9HwDzIPjhKmqADz$af71c3275ce3e143d85eb034f00568312f5ac1deded2a577a8cf90070186a4ff5463be6a2a94d894919f966c2fa02907ba29aa86d1df0815b3f8eebf4db6bab2'
+FROM persona p JOIN rol r ON r.nombre = 'ASISTENTE'
+WHERE p.email = 'asistente@unicaribe.edu.co';
+
 
 -- ============================================================
 -- PLANES DE ESTUDIO FALTANTES
@@ -739,251 +1045,4 @@ FROM programa_academico p, asignatura a,
  SELECT 'MAS-DER','FIN201',3,4 UNION ALL SELECT 'MAS-DER','INV201',3,4 UNION ALL
  SELECT 'MAS-DER','TRA101',4,6 UNION ALL SELECT 'MAS-DER','TRA102',4,6) t
 WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
-
-
--- ============================================================
--- ESTUDIANTES ADICIONALES (10 por programa)
--- ============================================================
-INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
--- ING-SIS
-('CC','1002000001','Alejandro','Bermúdez Soto','abermudez@estudiante.edu.co','3001001001'),
-('CC','1002000002','Natalia','Ospina Giraldo','nospina@estudiante.edu.co','3001001002'),
-('CC','1002000003','Ricardo','Salcedo Arango','rsalcedo@estudiante.edu.co','3001001003'),
-('CC','1002000004','Paola','Duarte Meza','pduarte@estudiante.edu.co','3001001004'),
-('CC','1002000005','Cristian','Vélez Torres','cvelez@estudiante.edu.co','3001001005'),
-('CC','1002000006','Luisa','Cárdenas Pinto','lcardenas@estudiante.edu.co','3001001006'),
-('CC','1002000007','Esteban','Montoya Ríos','emontoya@estudiante.edu.co','3001001007'),
-('CC','1002000008','Juliana','Zapata Cano','jzapata@estudiante.edu.co','3001001008'),
-('CC','1002000009','Sebastián','Aristizabal Cruz','saristizabal@estudiante.edu.co','3001001009'),
-('CC','1002000010','María','Ocampo Jaramillo','mocampo@estudiante.edu.co','3001001010'),
--- ING-IND
-('CC','1002001001','Daniel','Castaño Reyes','dcastano@estudiante.edu.co','3001002001'),
-('CC','1002001002','Valentina','Escobar Muñoz','vescobar@estudiante.edu.co','3001002002'),
-('CC','1002001003','Andrés','Patiño Gómez','apatino@estudiante.edu.co','3001002003'),
-('CC','1002001004','Camila','Lozano Pérez','clozano@estudiante.edu.co','3001002004'),
-('CC','1002001005','Diego','Cárdenas López','dcardenas2@estudiante.edu.co','3001002005'),
-('CC','1002001006','Sara','Mejía Herrera','smejia@estudiante.edu.co','3001002006'),
-('CC','1002001007','Juan','Vargas Sánchez','jvargasii@estudiante.edu.co','3001002007'),
-('CC','1002001008','Sofía','Ramos Castro','sramosii@estudiante.edu.co','3001002008'),
-('CC','1002001009','Mateo','Gutiérrez Díaz','mgutierrez@estudiante.edu.co','3001002009'),
-('CC','1002001010','Laura','Henao Torres','lhenao@estudiante.edu.co','3001002010'),
--- ADM-EMP
-('CC','1002002001','Carlos','Mora Salinas','cmora@estudiante.edu.co','3001003001'),
-('CC','1002002002','Daniela','Ríos Mendoza','drios@estudiante.edu.co','3001003002'),
-('CC','1002002003','Felipe','Aguilar Rojas','faguilar@estudiante.edu.co','3001003003'),
-('CC','1002002004','Isabella','Ruiz Vargas','iruiz@estudiante.edu.co','3001003004'),
-('CC','1002002005','Santiago','Peña Castro','spenad@estudiante.edu.co','3001003005'),
-('CC','1002002006','Valeria','Ortiz Herrera','vortiz@estudiante.edu.co','3001003006'),
-('CC','1002002007','Nicolás','Silva Gómez','nsilva@estudiante.edu.co','3001003007'),
-('CC','1002002008','Gabriela','López Martínez','glopezii@estudiante.edu.co','3001003008'),
-('CC','1002002009','Sebastián','Torres Jiménez','storresii@estudiante.edu.co','3001003009'),
-('CC','1002002010','Mariana','Díaz Rodríguez','mdiaz@estudiante.edu.co','3001003010'),
--- CON-PUB
-('CC','1002003001','David','Ramírez Flores','dramirez@estudiante.edu.co','3001004001'),
-('CC','1002003002','Luisa','Fernández Mora','lfernandezii@estudiante.edu.co','3001004002'),
-('CC','1002003003','Miguel','Guerrero Soto','mguerrero@estudiante.edu.co','3001004003'),
-('CC','1002003004','Camila','Bermúdez Ríos','cbermudez@estudiante.edu.co','3001004004'),
-('CC','1002003005','Julián','Arango Pérez','jarango@estudiante.edu.co','3001004005'),
-('CC','1002003006','Natalia','Cano Herrera','ncanoh@estudiante.edu.co','3001004006'),
-('CC','1002003007','Andrés','Ospina Torres','aospinat@estudiante.edu.co','3001004007'),
-('CC','1002003008','Sara','Vélez Castro','svelezc@estudiante.edu.co','3001004008'),
-('CC','1002003009','Ricardo','Montoya López','rmontoya@estudiante.edu.co','3001004009'),
-('CC','1002003010','Paola','Zapata Gómez','pzapatag@estudiante.edu.co','3001004010'),
--- DER
-('CC','1002004001','Cristian','Salcedo Muñoz','csalcedo@estudiante.edu.co','3001005001'),
-('CC','1002004002','María','Duarte Reyes','mduarte@estudiante.edu.co','3001005002'),
-('CC','1002004003','Esteban','Castaño Silva','ecastano@estudiante.edu.co','3001005003'),
-('CC','1002004004','Juliana','Patiño Díaz','jpatinoii@estudiante.edu.co','3001005004'),
-('CC','1002004005','Daniel','Escobar Ramírez','descobar@estudiante.edu.co','3001005005'),
-('CC','1002004006','Valentina','Lozano Arango','vlozano@estudiante.edu.co','3001005006'),
-('CC','1002004007','Alejandro','Cárdenas Cano','acardenasc@estudiante.edu.co','3001005007'),
-('CC','1002004008','Natalia','Mejía Ospina','nmejiao@estudiante.edu.co','3001005008'),
-('CC','1002004009','Carlos','Gutiérrez Vélez','cgutierrezv@estudiante.edu.co','3001005009'),
-('CC','1002004010','Daniela','Henao Zapata','dhenatoz@estudiante.edu.co','3001005010'),
--- PSI
-('CC','1002005001','Felipe','Mora Salcedo','fmoras@estudiante.edu.co','3001006001'),
-('CC','1002005002','Isabella','Ríos Duarte','iriosd@estudiante.edu.co','3001006002'),
-('CC','1002005003','Santiago','Aguilar Castaño','saguilarc@estudiante.edu.co','3001006003'),
-('CC','1002005004','Valeria','Ruiz Patiño','vruizp@estudiante.edu.co','3001006004'),
-('CC','1002005005','Nicolás','Peña Escobar','npenae@estudiante.edu.co','3001006005'),
-('CC','1002005006','Gabriela','Ortiz Lozano','gortizl@estudiante.edu.co','3001006006'),
-('CC','1002005007','Mateo','Silva Cárdenas','msilvac@estudiante.edu.co','3001006007'),
-('CC','1002005008','Laura','López Mejía','llopezmii@estudiante.edu.co','3001006008'),
-('CC','1002005009','Diego','Torres Gutiérrez','dtorresg@estudiante.edu.co','3001006009'),
-('CC','1002005010','Sara','Díaz Henao','sdiazh@estudiante.edu.co','3001006010'),
--- MED
-('CC','1002006001','Juan','Ramírez Mora','jramirezm@estudiante.edu.co','3001007001'),
-('CC','1002006002','Sofía','Fernández Ríos','sfernandezr@estudiante.edu.co','3001007002'),
-('CC','1002006003','Camila','Guerrero Aguilar','cguerreroa@estudiante.edu.co','3001007003'),
-('CC','1002006004','Andrés','Bermúdez Ruiz','abermudezr@estudiante.edu.co','3001007004'),
-('CC','1002006005','Paola','Arango Peña','parangop@estudiante.edu.co','3001007005'),
-('CC','1002006006','Ricardo','Cano Ortiz','rcanoo@estudiante.edu.co','3001007006'),
-('CC','1002006007','Natalia','Ospina Silva','nospinak@estudiante.edu.co','3001007007'),
-('CC','1002006008','Felipe','Vélez López','fvelezl@estudiante.edu.co','3001007008'),
-('CC','1002006009','Luisa','Zapata Torres','lzapata@estudiante.edu.co','3001007009'),
-('CC','1002006010','Carlos','Montoya Díaz','cmontoyad@estudiante.edu.co','3001007010'),
--- ENF
-('CC','1002007001','Daniela','Salcedo Ramírez','dsalcedor@estudiante.edu.co','3001008001'),
-('CC','1002007002','Miguel','Duarte Fernández','mduartef@estudiante.edu.co','3001008002'),
-('CC','1002007003','Valentina','Castaño Guerrero','vcastanog@estudiante.edu.co','3001008003'),
-('CC','1002007004','Julián','Patiño Bermúdez','jpatinob2@estudiante.edu.co','3001008004'),
-('CC','1002007005','Camila','Escobar Arango','cescobaraa@estudiante.edu.co','3001008005'),
-('CC','1002007006','Diego','Lozano Cano','dlozanoc@estudiante.edu.co','3001008006'),
-('CC','1002007007','Sara','Cárdenas Ospina','scardenaso@estudiante.edu.co','3001008007'),
-('CC','1002007008','Esteban','Mejía Vélez','emejiav@estudiante.edu.co','3001008008'),
-('CC','1002007009','Juliana','Gutiérrez Zapata','jgutierrezz@estudiante.edu.co','3001008009'),
-('CC','1002007010','Daniel','Henao Montoya','dhenoam@estudiante.edu.co','3001008010'),
--- ARQ
-('CC','1002008001','Alejandro','Mora Salcedoa','amoras@estudiante.edu.co','3001009001'),
-('CC','1002008002','Natalia','Ríos Duarteb','nriosd@estudiante.edu.co','3001009002'),
-('CC','1002008003','Ricardo','Aguilar Castaño','raguilarc@estudiante.edu.co','3001009003'),
-('CC','1002008004','Paola','Ruiz Patiñob','pruizp@estudiante.edu.co','3001009004'),
-('CC','1002008005','Cristian','Peña Escobarb','cpenae@estudiante.edu.co','3001009005'),
-('CC','1002008006','María','Ortiz Lozanob','mortizl@estudiante.edu.co','3001009006'),
-('CC','1002008007','Esteban','Silva Cárdenas','esilvac@estudiante.edu.co','3001009007'),
-('CC','1002008008','Juliana','López Mejíab','jlopezm@estudiante.edu.co','3001009008'),
-('CC','1002008009','Daniel','Torres Gutiérrez','dtorresgii@estudiante.edu.co','3001009009'),
-('CC','1002008010','Valentina','Díaz Henao','vdiazh@estudiante.edu.co','3001009010'),
--- COM-SOC
-('CC','1002009001','Santiago','Ramírez Morab','sramirezm@estudiante.edu.co','3001010001'),
-('CC','1002009002','Valeria','Fernández Ríosb','vfernandezr@estudiante.edu.co','3001010002'),
-('CC','1002009003','Nicolás','Guerrero Aguilar','nguerreroa@estudiante.edu.co','3001010003'),
-('CC','1002009004','Gabriela','Bermúdez Ruizb','gbermudezr@estudiante.edu.co','3001010004'),
-('CC','1002009005','Mateo','Arango Peñab','marangop@estudiante.edu.co','3001010005'),
-('CC','1002009006','Laura','Cano Ortizb','lcanoo@estudiante.edu.co','3001010006'),
-('CC','1002009007','Diego','Ospina Silvaб','dospinakc@estudiante.edu.co','3001010007'),
-('CC','1002009008','Sara','Vélez Lópezb','svelezlb@estudiante.edu.co','3001010008'),
-('CC','1002009009','Camila','Zapata Torresb','lzapatab@estudiante.edu.co','3001010009'),
-('CC','1002009010','Andrés','Montoya Díazb','cmontoyab@estudiante.edu.co','3001010010'),
--- EDU-INF
-('CC','1002010001','Daniela','Salcedo Ramírezb','dsalcedorb@estudiante.edu.co','3001011001'),
-('CC','1002010002','Miguel','Duarte Fernándezb','mduartefb@estudiante.edu.co','3001011002'),
-('CC','1002010003','Valentina','Castaño Guerrerob','vcastanogb@estudiante.edu.co','3001011003'),
-('CC','1002010004','Julián','Patiño Bermúdezb','jpatinobc2@estudiante.edu.co','3001011004'),
-('CC','1002010005','Camila','Escobar Arangob','cescobarab@estudiante.edu.co','3001011005'),
-('CC','1002010006','Diego','Lozano Canob','dlozanocb@estudiante.edu.co','3001011006'),
-('CC','1002010007','Sara','Cárdenas Ospinab','scardenosb@estudiante.edu.co','3001011007'),
-('CC','1002010008','Esteban','Mejía Vélezb','emejiavb@estudiante.edu.co','3001011008'),
-('CC','1002010009','Juliana','Gutiérrez Zapatab','jgutierrezb@estudiante.edu.co','3001011009'),
-('CC','1002010010','Daniel','Henao Montoyab','dhenoamb@estudiante.edu.co','3001011010'),
--- NEG-INT
-('CC','1002011001','Alejandro','Mora Salcedob','amorasb@estudiante.edu.co','3001012001'),
-('CC','1002011002','Natalia','Ríos Duartec','nriosdb@estudiante.edu.co','3001012002'),
-('CC','1002011003','Ricardo','Aguilar Castañob','raguilarcb@estudiante.edu.co','3001012003'),
-('CC','1002011004','Paola','Ruiz Patiñoc','pruizpb@estudiante.edu.co','3001012004'),
-('CC','1002011005','Cristian','Peña Escobarc','cpenaebc@estudiante.edu.co','3001012005'),
-('CC','1002011006','María','Ortiz Lozanoc','mortizlb@estudiante.edu.co','3001012006'),
-('CC','1002011007','Esteban','Silva Cárdenasb','esilvacb@estudiante.edu.co','3001012007'),
-('CC','1002011008','Juliana','López Mejíac','jlopezmb@estudiante.edu.co','3001012008'),
-('CC','1002011009','Daniel','Torres Gutiérrezb','dtorresgiib@estudiante.edu.co','3001012009'),
-('CC','1002011010','Valentina','Díaz Henaob','vdiazhb@estudiante.edu.co','3001012010'),
--- TEC-SIS extra
-('CC','1002012001','Santiago','Ramírez Morac','sramirezmb@estudiante.edu.co','3001013001'),
-('CC','1002012002','Valeria','Fernández Ríosc','vfernandezrb@estudiante.edu.co','3001013002'),
-('CC','1002012003','Nicolás','Guerrero Aguilarb','nguerreroab@estudiante.edu.co','3001013003'),
-('CC','1002012004','Gabriela','Bermúdez Ruizc','gbermudezrc@estudiante.edu.co','3001013004'),
-('CC','1002012005','Mateo','Arango Peñac','marangopc@estudiante.edu.co','3001013005'),
-('CC','1002012006','Laura','Cano Ortizc','lcanoobc@estudiante.edu.co','3001013006'),
-('CC','1002012008','Sara','Vélez Lópezc','svelezlc@estudiante.edu.co','3001013008'),
-('CC','1002012009','Camila','Zapata Torresc','lzapatac@estudiante.edu.co','3001013009'),
-('CC','1002012010','Andrés','Montoya Díazc','cmontoyac@estudiante.edu.co','3001013010'),
--- TEC-ADM
-('CC','1002013001','Felipe','Mora Salcedob','fmorasb@estudiante.edu.co','3001014001'),
-('CC','1002013002','Isabella','Ríos Duarted','iriosdbc@estudiante.edu.co','3001014002'),
-('CC','1002013003','Santiago','Aguilar Castañob','saguilarcb@estudiante.edu.co','3001014003'),
-('CC','1002013004','Valeria','Ruiz Patiñob','vruizpb@estudiante.edu.co','3001014004'),
-('CC','1002013005','Nicolás','Peña Escobarb','npenaebc@estudiante.edu.co','3001014005'),
-('CC','1002013006','Gabriela','Ortiz Lozanob','gortizlb@estudiante.edu.co','3001014006'),
-('CC','1002013007','Mateo','Silva Cárdenasb','msilvacb@estudiante.edu.co','3001014007'),
-('CC','1002013008','Laura','López Mejíab','llopezmb@estudiante.edu.co','3001014008'),
-('CC','1002013009','Diego','Torres Gutiérrezb','dtorresgb@estudiante.edu.co','3001014009'),
-('CC','1002013010','Sara','Díaz Henaob','sdiazb@estudiante.edu.co','3001014010'),
--- TEC-CON
-('CC','1002014001','Juan','Ramírez Morab','jramirezmb@estudiante.edu.co','3001015001'),
-('CC','1002014002','Sofía','Fernández Ríosb','sfernandezrb@estudiante.edu.co','3001015002'),
-('CC','1002014003','Camila','Guerrero Aguilarb','cguerreroab@estudiante.edu.co','3001015003'),
-('CC','1002014004','Andrés','Bermúdez Ruizb','abermudezrb@estudiante.edu.co','3001015004'),
-('CC','1002014005','Paola','Arango Peñab','parangopb@estudiante.edu.co','3001015005'),
-('CC','1002014006','Ricardo','Cano Ortizb','rcanoobc@estudiante.edu.co','3001015006'),
-('CC','1002014007','Natalia','Ospina Silvab','nospinakb@estudiante.edu.co','3001015007'),
-('CC','1002014008','Felipe','Vélez Lópezb','fvelezlb@estudiante.edu.co','3001015008'),
-('CC','1002014009','Luisa','Zapata Torresb','lzapatab2@estudiante.edu.co','3001015009'),
-('CC','1002014010','Carlos','Montoya Díazb','cmontoyab2@estudiante.edu.co','3001015010'),
--- ESP-GER extra
-('CC','1002015001','Daniela','Salcedo Ramírezc','dsalcedorc@estudiante.edu.co','3001016001'),
-('CC','1002015002','Miguel','Duarte Fernándezc','mduartefc@estudiante.edu.co','3001016002'),
-('CC','1002015003','Valentina','Castaño Guerreroc','vcastanogc@estudiante.edu.co','3001016003'),
-('CC','1002015004','Julián','Patiño Bermúdezc','jpatinobc@estudiante.edu.co','3001016004'),
-('CC','1002015005','Camila','Escobar Arangoc','cescobarc@estudiante.edu.co','3001016005'),
-('CC','1002015006','Diego','Lozano Canoc','dlozanocc@estudiante.edu.co','3001016006'),
-('CC','1002015007','Sara','Cárdenas Ospinac','scardenasc@estudiante.edu.co','3001016007'),
-('CC','1002015008','Esteban','Mejía Vélezc','emejiavc@estudiante.edu.co','3001016008'),
-('CC','1002015009','Juliana','Gutiérrez Zapatac','jgutierrezc@estudiante.edu.co','3001016009'),
-('CC','1002015010','Daniel','Henao Montoyac','dhenoamc@estudiante.edu.co','3001016010'),
--- ESP-FIN
-('CC','1002016001','Alejandro','Mora Salcedoc','amorasc@estudiante.edu.co','3001017001'),
-('CC','1002016002','Natalia','Ríos Duartee','nriosde@estudiante.edu.co','3001017002'),
-('CC','1002016003','Ricardo','Aguilar Castañoc','raguilarcc@estudiante.edu.co','3001017003'),
-('CC','1002016004','Paola','Ruiz Patiñod','pruizpd@estudiante.edu.co','3001017004'),
-('CC','1002016005','Cristian','Peña Escobard','cpenaed@estudiante.edu.co','3001017005'),
-('CC','1002016006','María','Ortiz Lozanod','mortizld@estudiante.edu.co','3001017006'),
-('CC','1002016007','Esteban','Silva Cárdenasc','esilvac2@estudiante.edu.co','3001017007'),
-('CC','1002016008','Juliana','López Mejíad','jlopezmd@estudiante.edu.co','3001017008'),
-('CC','1002016009','Daniel','Torres Gutiérrezc','dtorresgiic@estudiante.edu.co','3001017009'),
-('CC','1002016010','Valentina','Díaz Henaoc','vdiazhc@estudiante.edu.co','3001017010'),
--- ESP-DER
-('CC','1002017001','Santiago','Ramírez Morad','sramirezmb2@estudiante.edu.co','3001018001'),
-('CC','1002017002','Valeria','Fernández Ríosd','vfernandezrd@estudiante.edu.co','3001018002'),
-('CC','1002017003','Nicolás','Guerrero Aguilarc','nguerreroac@estudiante.edu.co','3001018003'),
-('CC','1002017004','Gabriela','Bermúdez Ruizd','gbermudezrd@estudiante.edu.co','3001018004'),
-('CC','1002017005','Mateo','Arango Peñad','marangopd@estudiante.edu.co','3001018005'),
-('CC','1002017006','Laura','Cano Ortizd','lcanood@estudiante.edu.co','3001018006'),
-('CC','1002017007','Diego','Ospina Silvad','dospinad@estudiante.edu.co','3001018007'),
-('CC','1002017008','Sara','Vélez Lópezd','svelezld@estudiante.edu.co','3001018008'),
-('CC','1002017009','Camila','Zapata Torresd','lzapatad@estudiante.edu.co','3001018009'),
-('CC','1002017010','Andrés','Montoya Díazd','cmontoyad2@estudiante.edu.co','3001018010'),
--- ESP-TIC
-('CC','1002018001','Felipe','Mora Salcedod','fmorasd@estudiante.edu.co','3001019001'),
-('CC','1002018002','Isabella','Ríos Duartef','iriosdf@estudiante.edu.co','3001019002'),
-('CC','1002018003','Santiago','Aguilar Castañoc','saguilarcc@estudiante.edu.co','3001019003'),
-('CC','1002018004','Valeria','Ruiz Patiñoc','vruizpc@estudiante.edu.co','3001019004'),
-('CC','1002018005','Nicolás','Peña Escobarc','npenaec@estudiante.edu.co','3001019005'),
-('CC','1002018006','Gabriela','Ortiz Lozanoc','gortizlc@estudiante.edu.co','3001019006'),
-('CC','1002018007','Mateo','Silva Cárdenasc','msilvacc@estudiante.edu.co','3001019007'),
-('CC','1002018008','Laura','López Mejíac','llopezmcc@estudiante.edu.co','3001019008'),
-('CC','1002018009','Diego','Torres Gutiérrezc','dtorresigc@estudiante.edu.co','3001019009'),
-('CC','1002018010','Sara','Díaz Henaoc','sdiazc@estudiante.edu.co','3001019010'),
--- MAS-ADM extra
-('CC','1002019001','Juan','Ramírez Morac','jramirezmbc@estudiante.edu.co','3001020001'),
-('CC','1002019002','Sofía','Fernández Ríosc','sfernandezrc@estudiante.edu.co','3001020002'),
-('CC','1002019003','Camila','Guerrero Aguilarc','cguerreroc@estudiante.edu.co','3001020003'),
-('CC','1002019004','Andrés','Bermúdez Ruizc','abermudezrc@estudiante.edu.co','3001020004'),
-('CC','1002019005','Paola','Arango Peñac','parangopc@estudiante.edu.co','3001020005'),
-('CC','1002019006','Ricardo','Cano Ortizc','rcanoc@estudiante.edu.co','3001020006'),
-('CC','1002019007','Natalia','Ospina Silvac','nospinac@estudiante.edu.co','3001020007'),
-('CC','1002019008','Felipe','Vélez Lópezc','fvelezc@estudiante.edu.co','3001020008'),
-('CC','1002019009','Luisa','Zapata Torresc','lzapatac2@estudiante.edu.co','3001020009'),
-('CC','1002019010','Carlos','Montoya Díazc','cmontoyac2@estudiante.edu.co','3001020010'),
--- MAS-ING
-('CC','1002020001','Daniela','Salcedo Ramírezd','dsalcedord@estudiante.edu.co','3001021001'),
-('CC','1002020002','Miguel','Duarte Fernándezd','mduartefd@estudiante.edu.co','3001021002'),
-('CC','1002020003','Valentina','Castaño Guerrerod','vcastanod@estudiante.edu.co','3001021003'),
-('CC','1002020004','Julián','Patiño Bermúdezd','jpatinobd@estudiante.edu.co','3001021004'),
-('CC','1002020005','Camila','Escobar Arangod','cescobd@estudiante.edu.co','3001021005'),
-('CC','1002020006','Diego','Lozano Canod','dlozanod@estudiante.edu.co','3001021006'),
-('CC','1002020007','Sara','Cárdenas Ospinad','scardenosd@estudiante.edu.co','3001021007'),
-('CC','1002020008','Esteban','Mejía Vélezd','emejiavd@estudiante.edu.co','3001021008'),
-('CC','1002020009','Juliana','Gutiérrez Zapatad','jgutierrezd@estudiante.edu.co','3001021009'),
-('CC','1002020010','Daniel','Henao Montoyad','dhenoamd@estudiante.edu.co','3001021010'),
--- MAS-DER
-('CC','1002021001','Alejandro','Mora Salcedoe','amorase@estudiante.edu.co','3001022001'),
-('CC','1002021002','Natalia','Ríos Duarteg','nriosdg@estudiante.edu.co','3001022002'),
-('CC','1002021003','Ricardo','Aguilar Castañod','raguilarcd@estudiante.edu.co','3001022003'),
-('CC','1002021004','Paola','Ruiz Patiñoe','pruizpe@estudiante.edu.co','3001022004'),
-('CC','1002021005','Cristian','Peña Escobare','cpenaee@estudiante.edu.co','3001022005'),
-('CC','1002021006','María','Ortiz Lozanoe','mortizle@estudiante.edu.co','3001022006'),
-('CC','1002021007','Esteban','Silva Cárdenase','esilvace@estudiante.edu.co','3001022007'),
-('CC','1002021008','Juliana','López Mejíae','jlopezme@estudiante.edu.co','3001022008'),
-('CC','1002021009','Daniel','Torres Gutiérrezd','dtorresgiid@estudiante.edu.co','3001022009'),
-('CC','1002021010','Valentina','Díaz Henaod','vdiazhd@estudiante.edu.co','3001022010');
 

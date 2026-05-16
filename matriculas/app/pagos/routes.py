@@ -39,6 +39,15 @@ def _get_cuenta_con_saldo(id_cuenta):
     return cuenta
 
 
+def _get_codigo_mpag(cursor):
+    """Obtiene el id_codigo del código MPAG para registrar el movimiento."""
+    cursor.execute(
+        "SELECT id_codigo FROM codigo_detalle WHERE codigo = 'MPAG' AND grupo = 'PAGO' LIMIT 1"
+    )
+    row = cursor.fetchone()
+    return row['id_codigo'] if row else None
+
+
 # ─── Pago por Caja ───────────────────────────────────────────────────────────
 
 @pagos_bp.route('/<int:id_cuenta>/caja', methods=['GET', 'POST'])
@@ -75,11 +84,27 @@ def pago_caja(id_cuenta):
                 conexion = get_connection()
                 conexion.autocommit = False
                 cursor = conexion.cursor(dictionary=True)
+                ahora = datetime.now()
+
+                # 1. Insertar en tabla pago
                 cursor.execute(
                     "INSERT INTO pago (id_cuenta, medio, ref, monto, fecha, id_usuario) VALUES (%s,%s,%s,%s,%s,%s)",
-                    (id_cuenta, medio, ref, monto, datetime.now(), session['usuario_id'])
+                    (id_cuenta, medio, ref, monto, ahora, session['usuario_id'])
                 )
                 id_pago = cursor.lastrowid
+
+                # 2. Registrar movimiento MPAG en movimiento_cuenta
+                id_codigo_mpag = _get_codigo_mpag(cursor)
+                if id_codigo_mpag:
+                    cursor.execute(
+                        """INSERT INTO movimiento_cuenta
+                           (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
+                           VALUES (%s, %s, %s, %s, %s, %s)""",
+                        (id_cuenta, id_codigo_mpag,
+                         f'Pago recibido — {medio}',
+                         monto, ahora, session['usuario_id'])
+                    )
+
                 conexion.commit()
                 return redirect(url_for('pagos.comprobante', id_pago=id_pago))
             except Error as e:
@@ -144,12 +169,28 @@ def pse_procesar(id_cuenta):
         conexion = get_connection()
         conexion.autocommit = False
         cursor = conexion.cursor(dictionary=True)
-        ref_pse = f"PSE-{banco[:3].upper()}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        ahora   = datetime.now()
+        ref_pse = f"PSE-{banco[:3].upper()}-{ahora.strftime('%Y%m%d%H%M%S')}"
+
+        # 1. Insertar en tabla pago
         cursor.execute(
             "INSERT INTO pago (id_cuenta, medio, ref, monto, fecha, id_usuario) VALUES (%s,%s,%s,%s,%s,%s)",
-            (id_cuenta, 'PSE', ref_pse, cuenta['saldo'], datetime.now(), session['usuario_id'])
+            (id_cuenta, 'PSE', ref_pse, cuenta['saldo'], ahora, session['usuario_id'])
         )
         id_pago = cursor.lastrowid
+
+        # 2. Registrar movimiento MPAG en movimiento_cuenta
+        id_codigo_mpag = _get_codigo_mpag(cursor)
+        if id_codigo_mpag:
+            cursor.execute(
+                """INSERT INTO movimiento_cuenta
+                   (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (id_cuenta, id_codigo_mpag,
+                 f'Pago recibido — PSE ({banco})',
+                 cuenta['saldo'], ahora, session['usuario_id'])
+            )
+
         conexion.commit()
         return redirect(url_for('pagos.comprobante', id_pago=id_pago))
     except Error as e:

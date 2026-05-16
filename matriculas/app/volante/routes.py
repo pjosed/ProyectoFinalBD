@@ -106,9 +106,11 @@ def buscar():
             SELECT e.id_estudiante, e.nombres, e.apellidos,
                    e.num_doc, e.tipo_doc,
                    MAX(pr.nombre) AS programa,
-                   cc.id_cuenta
+                   cc.id_cuenta,
+                   pa.nombre AS periodo
             FROM estudiante e
             JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
+            JOIN periodo_academico pa ON pa.id_periodo = cc.id_periodo
             JOIN (
                 SELECT vm1.id_cuenta, vm1.id_prog
                 FROM volante_matricula vm1
@@ -121,7 +123,7 @@ def buscar():
             JOIN programa_academico pr ON vm.id_prog = pr.id_programa
             WHERE e.activo = TRUE
               AND (e.nombres LIKE %s OR e.apellidos LIKE %s OR e.num_doc LIKE %s)
-            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta, pa.nombre
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,
