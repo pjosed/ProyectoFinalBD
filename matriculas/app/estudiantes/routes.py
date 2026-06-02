@@ -4,6 +4,19 @@ from app.auth.routes import login_requerido, rol_requerido
 from config.database import ejecutar_consulta, ejecutar_uno
 
 
+def _mensaje_duplicado(error_str):
+    """
+    Convierte el error 1062 de MySQL en un mensaje amigable.
+    Detecta qué campo causó el duplicado leyendo el key name del error.
+    """
+    err = str(error_str).lower()
+    if 'num_doc' in err:
+        return 'Ese número de documento ya está registrado. Por favor ingrese uno diferente.'
+    if 'email' in err:
+        return 'Ese correo electrónico ya está registrado. Por favor ingrese uno diferente.'
+    return 'Uno de los datos ingresados ya existe en el sistema. Verifique documento y correo.'
+
+
 @estudiantes_bp.route('/')
 @login_requerido
 @rol_requerido('ADMINISTRADOR', 'SUPERVISOR', 'ASISTENTE')
@@ -27,7 +40,7 @@ def crear_estudiante():
         email     = (request.form.get('email') or '').strip().lower()
         telefono  = (request.form.get('telefono') or '').strip() or None
 
-        TIPOS_DOC_VALIDOS = ('CC', 'CE', 'TI', 'PA', 'RC')  # máx 5 chars
+        TIPOS_DOC_VALIDOS = ('CC', 'CE', 'TI', 'PA', 'RC')
         if not tipo_doc or tipo_doc not in TIPOS_DOC_VALIDOS:
             flash(f'Tipo de documento inválido. Use: {", ".join(TIPOS_DOC_VALIDOS)}.', 'warning')
             return render_template('estudiantes/crear.html')
@@ -45,7 +58,10 @@ def crear_estudiante():
             flash('Estudiante registrado exitosamente.', 'success')
             return redirect(url_for('estudiantes.lista_estudiantes'))
         except Exception as e:
-            flash(f'Error al registrar estudiante (¿quizás documento o email duplicado?): {str(e)}', 'danger')
+            if '1062' in str(e):
+                flash(_mensaje_duplicado(e), 'warning')
+            else:
+                flash(f'Error inesperado al registrar el estudiante: {str(e)}', 'danger')
 
     return render_template('estudiantes/crear.html')
 
@@ -63,12 +79,21 @@ def editar_estudiante(id_estudiante):
         return redirect(url_for('estudiantes.lista_estudiantes'))
 
     if request.method == 'POST':
-        tipo_doc  = request.form.get('tipo_doc')
-        num_doc   = request.form.get('num_doc')
-        nombres   = request.form.get('nombres')
-        apellidos = request.form.get('apellidos')
-        email     = request.form.get('email')
-        telefono  = request.form.get('telefono')
+        tipo_doc  = (request.form.get('tipo_doc') or '').strip().upper()
+        num_doc   = (request.form.get('num_doc') or '').strip()
+        nombres   = (request.form.get('nombres') or '').strip()
+        apellidos = (request.form.get('apellidos') or '').strip()
+        email     = (request.form.get('email') or '').strip().lower()
+        telefono  = (request.form.get('telefono') or '').strip() or None
+
+        TIPOS_DOC_VALIDOS = ('CC', 'CE', 'TI', 'PA', 'RC')
+        if not tipo_doc or tipo_doc not in TIPOS_DOC_VALIDOS:
+            flash(f'Tipo de documento inválido. Use: {", ".join(TIPOS_DOC_VALIDOS)}.', 'warning')
+            return render_template('estudiantes/editar.html', estudiante=estudiante)
+
+        if not num_doc or not nombres or not apellidos or not email:
+            flash('Todos los campos obligatorios deben completarse.', 'warning')
+            return render_template('estudiantes/editar.html', estudiante=estudiante)
 
         try:
             sql_update = """
@@ -80,7 +105,10 @@ def editar_estudiante(id_estudiante):
             flash('Estudiante actualizado exitosamente.', 'success')
             return redirect(url_for('estudiantes.lista_estudiantes'))
         except Exception as e:
-            flash(f'Error al actualizar: {str(e)}', 'danger')
+            if '1062' in str(e):
+                flash(_mensaje_duplicado(e), 'warning')
+            else:
+                flash(f'Error inesperado al actualizar el estudiante: {str(e)}', 'danger')
 
     return render_template('estudiantes/editar.html', estudiante=estudiante)
 

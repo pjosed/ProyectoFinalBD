@@ -205,27 +205,21 @@ def creditos():
 
     sql = """
         SELECT e.nombres, e.apellidos, e.num_doc,
-               pa.nombre                          AS nom_periodo,
-               COALESCE(MAX(prog.nombre), '—')    AS nom_programa,
-               SUM(mc.monto)                      AS valor_credito,
+               pa.nombre                                                    AS nom_periodo,
+               COALESCE(
+                   GROUP_CONCAT(DISTINCT prog.nombre ORDER BY prog.nombre SEPARATOR ' / '),
+                   '—'
+               )                                                            AS nom_programa,
+               SUM(mc.monto)                                                AS valor_credito,
                cc.id_cuenta
         FROM movimiento_cuenta  mc
-        JOIN codigo_detalle     cd  ON mc.id_codigo     = cd.id_codigo
-        JOIN cuenta_corriente   cc  ON mc.id_cuenta     = cc.id_cuenta
-        JOIN estudiante         e   ON cc.id_estudiante = e.id_estudiante
-        JOIN periodo_academico  pa  ON cc.id_periodo    = pa.id_periodo
-        -- Obtener el programa del último volante de la cuenta (puede no existir)
-        LEFT JOIN (
-            SELECT vm1.id_cuenta, vm1.id_prog
-            FROM volante_matricula vm1
-            INNER JOIN (
-                SELECT id_cuenta, MAX(id_volante) AS max_vol
-                FROM volante_matricula
-                GROUP BY id_cuenta
-            ) vm2 ON vm1.id_cuenta = vm2.id_cuenta
-                  AND vm1.id_volante = vm2.max_vol
-        ) vm  ON vm.id_cuenta  = cc.id_cuenta
-        LEFT JOIN programa_academico prog ON vm.id_prog = prog.id_programa
+        JOIN codigo_detalle     cd   ON mc.id_codigo     = cd.id_codigo
+        JOIN cuenta_corriente   cc   ON mc.id_cuenta     = cc.id_cuenta
+        JOIN estudiante         e    ON cc.id_estudiante = e.id_estudiante
+        JOIN periodo_academico  pa   ON cc.id_periodo    = pa.id_periodo
+        -- Todos los programas del estudiante en ese periodo
+        LEFT JOIN volante_matricula vm   ON vm.id_cuenta = cc.id_cuenta
+        LEFT JOIN programa_academico prog ON prog.id_programa = vm.id_prog
         WHERE cd.codigo = 'CRED'
           AND cd.grupo  = 'PAGO'
     """

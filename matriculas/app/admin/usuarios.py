@@ -110,14 +110,35 @@ def usuario_nuevo():
                 "SELECT id_persona FROM persona WHERE email = %s", (correo,)
             )
             if existente:
-                flash("Ya existe una persona con ese correo.", "danger")
+                flash("Ya existe una persona con ese correo. Por favor ingrese uno diferente.", "warning")
                 return render_template("admin/usuario_form.html",
                                        roles=roles, personas=personas_sin_usuario)
 
-            id_persona = ejecutar_consulta(
-                "INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES (%s,%s,%s,%s,%s,%s)",
-                ('CC', num_doc, nombres, apellidos, correo, telefono or None),
+            existente_doc = ejecutar_uno(
+                "SELECT id_persona FROM persona WHERE num_doc = %s", (num_doc,)
             )
+            if existente_doc:
+                flash("Ya existe una persona con ese número de documento. Por favor ingrese uno diferente.", "warning")
+                return render_template("admin/usuario_form.html",
+                                       roles=roles, personas=personas_sin_usuario)
+
+            try:
+                id_persona = ejecutar_consulta(
+                    "INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES (%s,%s,%s,%s,%s,%s)",
+                    ('CC', num_doc, nombres, apellidos, correo, telefono or None),
+                )
+            except Exception as e:
+                if "1062" in str(e):
+                    if "num_doc" in str(e).lower():
+                        flash("Ese número de documento ya está registrado.", "warning")
+                    elif "email" in str(e).lower():
+                        flash("Ese correo electrónico ya está registrado.", "warning")
+                    else:
+                        flash("Uno de los datos ingresados ya existe en el sistema.", "warning")
+                else:
+                    flash(f"Error inesperado al crear la persona: {str(e)}", "danger")
+                return render_template("admin/usuario_form.html",
+                                       roles=roles, personas=personas_sin_usuario)
         else:
             flash("Acción no válida.", "danger")
             return render_template("admin/usuario_form.html",
@@ -251,15 +272,28 @@ def usuario_editar(id_usuario):
         telefono = request.form.get("telefono", "").strip()
         id_rol   = request.form.get("id_rol")
 
-        ejecutar_consulta(
-            "UPDATE persona SET nombres=%s, apellidos=%s, email=%s, telefono=%s WHERE id_persona=%s",
-            (nombre, apellido, correo, telefono or None, datos["id_persona"])
-        )
-        ejecutar_consulta(
-            "UPDATE usuario SET id_rol=%s WHERE id_usuario=%s",
-            (id_rol, id_usuario)
-        )
-        flash(f"Usuario '{datos['nombre_usuario']}' actualizado correctamente.", "success")
-        return redirect(url_for("admin.usuarios_lista"))
+        if not nombre or not apellido or not correo or not id_rol:
+            flash("Todos los campos obligatorios deben completarse.", "warning")
+            return render_template("admin/usuario_editar.html", usuario=datos, roles=roles)
+
+        try:
+            ejecutar_consulta(
+                "UPDATE persona SET nombres=%s, apellidos=%s, email=%s, telefono=%s WHERE id_persona=%s",
+                (nombre, apellido, correo, telefono or None, datos["id_persona"])
+            )
+            ejecutar_consulta(
+                "UPDATE usuario SET id_rol=%s WHERE id_usuario=%s",
+                (id_rol, id_usuario)
+            )
+            flash(f"Usuario '{datos['nombre_usuario']}' actualizado correctamente.", "success")
+            return redirect(url_for("admin.usuarios_lista"))
+        except Exception as e:
+            if "1062" in str(e):
+                if "email" in str(e).lower():
+                    flash("Ese correo electrónico ya está registrado. Por favor ingrese uno diferente.", "warning")
+                else:
+                    flash("Uno de los datos ingresados ya existe en el sistema.", "warning")
+            else:
+                flash(f"Error inesperado al actualizar el usuario: {str(e)}", "danger")
 
     return render_template("admin/usuario_editar.html", usuario=datos, roles=roles)

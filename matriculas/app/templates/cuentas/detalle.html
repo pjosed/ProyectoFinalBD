@@ -72,10 +72,16 @@
         <div class="card">
             <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
                 <span><i class="bi-arrow-up-circle text-danger me-2"></i>Movimientos de Cuenta</span>
-                <button class="btn btn-sm btn-outline-danger" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#formCobroAdicional">
-                    <i class="bi-plus-circle me-1"></i>Cobro adicional
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-danger" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#formCobroAdicional">
+                        <i class="bi-plus-circle me-1"></i>Cobro adicional
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#formPagoAdicional">
+                        <i class="bi-cash-coin me-1"></i>Registrar pago / ICETEX
+                    </button>
+                </div>
             </div>
 
             <div class="collapse" id="formCobroAdicional">
@@ -111,6 +117,47 @@
                             <div>
                                 <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="bi-plus-circle me-1"></i>Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Formulario: Registrar pago / crédito ICETEX -->
+            <div class="collapse" id="formPagoAdicional">
+                <div class="card-body border-bottom" style="background:#f0faf4;">
+                    <p class="small text-muted mb-2">
+                        <i class="bi-info-circle me-1"></i>
+                        Registra un abono, pago en efectivo o crédito ICETEX sobre esta cuenta.
+                        El saldo se reducirá automáticamente.
+                    </p>
+                    <form method="POST" action="{{ url_for('cuentas.agregar_pago', id_cuenta=cuenta.id_cuenta) }}">
+                        <div class="d-flex gap-2 align-items-end flex-wrap">
+                            <div style="min-width:180px; flex:2;">
+                                <label class="form-label small mb-1">Tipo de pago <span class="text-danger">*</span></label>
+                                <select name="id_codigo_pago" class="form-select form-select-sm" required>
+                                    <option value="">— Seleccione —</option>
+                                    {% for c in codigos_pago %}
+                                    <option value="{{ c.id_codigo }}">
+                                        {{ c.codigo }} — {{ c.descripcion }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div style="width:130px;">
+                                <label class="form-label small mb-1">Monto <span class="text-danger">*</span></label>
+                                <input type="number" name="monto_pago" class="form-control form-control-sm"
+                                       placeholder="0" min="1" step="1" required>
+                            </div>
+                            <div style="flex:2; min-width:120px;">
+                                <label class="form-label small mb-1">Descripción</label>
+                                <input type="text" name="descrip_pago" class="form-control form-control-sm"
+                                       placeholder="Ej: Crédito ICETEX semestre 2026-1">
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi-check-circle me-1"></i>Registrar pago
                                 </button>
                             </div>
                         </div>

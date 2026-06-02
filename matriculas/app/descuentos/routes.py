@@ -1,8 +1,3 @@
-"""
-app/descuentos/routes.py
-Módulo de Descuentos y Becas — UniCaribe
-"""
-
 from flask import render_template, request, redirect, url_for, flash, session
 from datetime import datetime
 from app.descuentos import descuentos_bp
@@ -70,7 +65,7 @@ def buscar():
             """
             SELECT e.id_estudiante, e.nombres, e.apellidos,
                    e.num_doc, e.tipo_doc,
-                   MAX(pr.nombre) AS programa
+                   GROUP_CONCAT(DISTINCT pr.nombre ORDER BY pr.nombre SEPARATOR ' / ') AS programa
             FROM estudiante e
             JOIN cuenta_corriente cc ON cc.id_estudiante = e.id_estudiante
             LEFT JOIN (
@@ -87,7 +82,7 @@ def buscar():
               AND (e.nombres   LIKE %s
                 OR e.apellidos LIKE %s
                 OR e.num_doc   LIKE %s)
-            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc, cc.id_cuenta
+            GROUP BY e.id_estudiante, e.nombres, e.apellidos, e.num_doc, e.tipo_doc
             ORDER BY e.apellidos, e.nombres
             LIMIT 50
             """,

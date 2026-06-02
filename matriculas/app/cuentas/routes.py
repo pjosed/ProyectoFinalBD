@@ -121,8 +121,17 @@ def detalle_cuenta(id_cuenta):
         (valor_credito,), fetch=True
     ) or []
 
+    # Códigos de pago disponibles (CRED, MPSE, MCAJ, etc.) para registrar abonos
+    codigos_pago = ejecutar_consulta(
+        """SELECT id_codigo, codigo, descripcion
+           FROM codigo_detalle
+           WHERE grupo = 'PAGO'
+           ORDER BY codigo""",
+        fetch=True
+    ) or []
+
     total_cobros = sum(float(m['monto']) for m in movimientos if m['grupo'] == 'COBRO')
-    total_pagos  = sum(float(p['monto']) for p in pagos)
+    total_pagos  = sum(float(m['monto']) for m in movimientos if m['grupo'] == 'PAGO')
     saldo        = total_cobros - total_pagos
 
     return render_template('cuentas/detalle.html',
@@ -130,6 +139,7 @@ def detalle_cuenta(id_cuenta):
                            movimientos=movimientos,
                            pagos=pagos,
                            codigos_cobro=codigos_cobro,
+                           codigos_pago=codigos_pago,
                            valor_credito=valor_credito,
                            total_cobros=total_cobros,
                            total_pagos=total_pagos,
@@ -172,4 +182,43 @@ def agregar_cobro(id_cuenta):
         (id_cuenta, id_codigo, descrip, monto, id_usuario)
     )
     flash('Cobro adicional registrado correctamente.', 'success')
+    return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+
+
+# ─── Agregar pago / crédito ICETEX ───────────────────────────────────────────
+
+@cuentas_bp.route('/<int:id_cuenta>/agregar-pago', methods=['POST'])
+@login_requerido
+@rol_requerido('ADMINISTRADOR', 'SUPERVISOR', 'ASISTENTE')
+def agregar_pago(id_cuenta):
+    id_codigo  = request.form.get('id_codigo_pago')
+    monto      = request.form.get('monto_pago', '').strip()
+    descrip    = request.form.get('descrip_pago', '').strip()
+    id_usuario = session['usuario_id']
+
+    if not id_codigo or not monto:
+        flash('Debe seleccionar un tipo de pago e ingresar el monto.', 'warning')
+        return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+
+    try:
+        monto = float(monto)
+        if monto <= 0:
+            raise ValueError
+    except ValueError:
+        flash('El monto debe ser un número mayor a cero.', 'warning')
+        return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))
+
+    if not descrip:
+        cod = ejecutar_uno(
+            "SELECT descripcion FROM codigo_detalle WHERE id_codigo = %s",
+            (id_codigo,)
+        )
+        descrip = cod['descripcion'] if cod else 'Pago registrado'
+
+    ejecutar_consulta(
+        """INSERT INTO movimiento_cuenta (id_cuenta, id_codigo, descrip, monto, fecha, id_usuario)
+           VALUES (%s, %s, %s, %s, NOW(), %s)""",
+        (id_cuenta, id_codigo, descrip, monto, id_usuario)
+    )
+    flash('Pago registrado. El saldo ha sido actualizado.', 'success')
     return redirect(url_for('cuentas.detalle_cuenta', id_cuenta=id_cuenta))

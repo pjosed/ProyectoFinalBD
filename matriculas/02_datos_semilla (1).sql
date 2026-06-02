@@ -9,7 +9,7 @@ USE matriculas_uni;
 -- ============================================================
 -- ROLES
 -- ============================================================
-INSERT INTO rol (nombre, descripcion) VALUES
+INSERT IGNORE INTO rol (nombre, descripcion) VALUES
     ('ADMINISTRADOR', 'Acceso total al sistema.'),
     ('SUPERVISOR',    'Gestiona información académica y financiera.'),
     ('ASISTENTE',     'Gestiona cobros y pagos.');
@@ -18,7 +18,7 @@ INSERT INTO rol (nombre, descripcion) VALUES
 -- ============================================================
 -- PROGRAMAS ACADÉMICOS
 -- ============================================================
-INSERT INTO programa_academico (codigo, nombre, num_sem, activo) VALUES
+INSERT IGNORE INTO programa_academico (codigo, nombre, num_sem, activo) VALUES
     ('ING-SIS',  'Ingeniería de Sistemas y Telecomunicaciones',  9, 1),
     ('ING-IND',  'Ingeniería Industrial',                        9, 1),
     ('ADM-EMP',  'Administración de Empresas',                   8, 1),
@@ -46,7 +46,7 @@ INSERT INTO programa_academico (codigo, nombre, num_sem, activo) VALUES
 -- ============================================================
 -- ASIGNATURAS
 -- ============================================================
-INSERT INTO asignatura (codigo, nombre) VALUES
+INSERT IGNORE INTO asignatura (codigo, nombre) VALUES
     ('MAT101', 'Cálculo Diferencial'),
     ('MAT102', 'Cálculo Integral'),
     ('MAT201', 'Cálculo Multivariable'),
@@ -192,7 +192,7 @@ INSERT INTO asignatura (codigo, nombre) VALUES
 -- ============================================================
 -- PERIODOS ACADÉMICOS
 -- ============================================================
-INSERT INTO periodo_academico (nombre, fecha_inicio, fecha_fin, activo) VALUES
+INSERT IGNORE INTO periodo_academico (nombre, fecha_inicio, fecha_fin, activo) VALUES
     ('2024-2', '2024-07-15', '2024-11-30', 0),
     ('2025-1', '2025-01-20', '2025-06-14', 0),
     ('2025-2', '2025-07-14', '2025-11-28', 0),
@@ -404,7 +404,7 @@ WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 -- ============================================================
 -- CÓDIGOS DE DETALLE
 -- ============================================================
-INSERT INTO codigo_detalle (grupo, codigo, descripcion) VALUES
+INSERT IGNORE INTO codigo_detalle (grupo, codigo, descripcion) VALUES
     ('COBRO', 'PMAT',  'Matrícula ordinaria del periodo'),
     ('COBRO', 'PCRE',  'Cobro adicional por créditos'),
     ('COBRO', 'PCAR',  'Carnet estudiantil'),
@@ -421,7 +421,7 @@ INSERT INTO codigo_detalle (grupo, codigo, descripcion) VALUES
 -- ============================================================
 -- BANCOS PSE
 -- ============================================================
-INSERT INTO banco_pse (codigo, nombre) VALUES
+INSERT IGNORE INTO banco_pse (codigo, nombre) VALUES
     ('BCOL', 'Bancolombia'),
     ('BBOG', 'Banco de Bogotá'),
     ('DAVY', 'Davivienda'),
@@ -439,7 +439,7 @@ INSERT INTO banco_pse (codigo, nombre) VALUES
 -- ============================================================
 -- TIPOS DE DESCUENTO / BECAS
 -- ============================================================
-INSERT INTO tipo_descuento (nombre, descripcion, porcentaje) VALUES
+INSERT IGNORE INTO tipo_descuento (nombre, descripcion, porcentaje) VALUES
     ('Beca Excelencia Académica',  'Estudiantes con promedio >= 4.5 semestre anterior',  25.00),
     ('Beca Socioeconómica',        'Apoyo a estudiantes de estratos 1 y 2',              50.00),
     ('Descuento Empleado',         'Colaboradores y familiares de primer grado',         20.00),
@@ -815,22 +815,22 @@ INSERT INTO estudiante (tipo_doc, num_doc, nombres, apellidos, email, telefono) 
 -- Contraseñas: Supervisor2026* y Asistente2026*
 -- ============================================================
 INSERT INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono) VALUES
-    ('CC', '1111111111', 'Carlos',  'Mendoza Herrera',  'supervisor@unicaribe.edu.co', '3009998877'),
-    ('CC', '2222222222', 'María',   'López Restrepo',   'asistente@unicaribe.edu.co',  '3009997766');
+    ('CC', '1111111111', 'Carlos',  'Mendoza Herrera',  'marianpachecocharris@gmail.com', '3009998877'),
+    ('CC', '2222222222', 'María',   'López Restrepo',   'jose102005p@gmail.com',  '3009997766');
 
 INSERT INTO usuario (id_persona, id_rol, username, password)
 SELECT p.id_persona, r.id_rol,
        'supervisor',
        'scrypt:32768:8:1$NjEHlvuzcn2kQCxB$bcd31cc8a6059fe7301ff78bc9e5fbc82e6daf0a0972a890e20b66123ed14c6183e930ecc9afa0e6f97c4d9369875cd1e14c54c45d447aeefa849ebb675ded35'
 FROM persona p JOIN rol r ON r.nombre = 'SUPERVISOR'
-WHERE p.email = 'supervisor@unicaribe.edu.co';
+WHERE p.email = 'marianpachecocharris@gmail.com';
 
 INSERT INTO usuario (id_persona, id_rol, username, password)
 SELECT p.id_persona, r.id_rol,
        'asistente',
        'scrypt:32768:8:1$Q9HwDzIPjhKmqADz$af71c3275ce3e143d85eb034f00568312f5ac1deded2a577a8cf90070186a4ff5463be6a2a94d894919f966c2fa02907ba29aa86d1df0815b3f8eebf4db6bab2'
 FROM persona p JOIN rol r ON r.nombre = 'ASISTENTE'
-WHERE p.email = 'asistente@unicaribe.edu.co';
+WHERE p.email = 'jose102005p@gmail.com';
 
 
 -- ============================================================
@@ -1057,17 +1057,26 @@ WHERE p.codigo = t.cod_p AND a.codigo = t.cod_a;
 -- USUARIO ADMINISTRADOR
 -- Contraseña: Admin2026*
 -- Hash generado con werkzeug.security.generate_password_hash('Admin2026*')
--- Si regeneras el hash con generar_admin.py, actualiza este INSERT.
+-- Email: unicaribe2026@gmail.com (nunca choca con usuarios reales)
 -- ============================================================
 INSERT IGNORE INTO persona (tipo_doc, num_doc, nombres, apellidos, email, telefono)
-VALUES ('CC', '0000000000', 'Administrador', 'Sistema', 'admin@unicaribe.edu.co', '3001234567');
+VALUES ('CC', '0000000000', 'Administrador', 'Sistema', 'unicaribe2026@gmail.com', '3001234567');
 
 INSERT IGNORE INTO usuario (id_persona, id_rol, username, password)
 SELECT
     p.id_persona,
     r.id_rol,
     'admin',
-    'scrypt:32768:8:1$uBvvaDV3gEn6rdpv$db5521a59afa5fdfe6da166104ef10251d94ef8fc82f4567c1e0c182143268fa78f3b685fa910f4c1e0c7ae80d61b7ee30d6082a8dd289ff875c4ad90c274c88'
+    'scrypt:32768:8:1$QOy1z3EhZpuZwpVn$e0690d40ffe8515c9667794e14bd38487cef7768a1efad0d8b69477629c04de419fdf8d7e91d5bda3a0fbb3c519745d34b3e689ce0dd526ef19e4d9330a09607'
 FROM persona p
 JOIN rol r ON r.nombre = 'ADMINISTRADOR'
-WHERE p.email = 'admin@unicaribe.edu.co';
+WHERE p.email = 'unicaribe2026@gmail.com';
+
+-- Siempre actualiza el hash para garantizar que sea el correcto
+-- (cubre el caso en que el usuario ya existía con hash anterior)
+UPDATE usuario u
+JOIN persona p ON u.id_persona = p.id_persona
+SET u.password = 'scrypt:32768:8:1$QOy1z3EhZpuZwpVn$e0690d40ffe8515c9667794e14bd38487cef7768a1efad0d8b69477629c04de419fdf8d7e91d5bda3a0fbb3c519745d34b3e689ce0dd526ef19e4d9330a09607',
+    u.activo   = 1
+WHERE p.email    = 'unicaribe2026@gmail.com'
+  AND u.username = 'admin';

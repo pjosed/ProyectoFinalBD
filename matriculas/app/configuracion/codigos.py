@@ -26,12 +26,18 @@ def codigo_nuevo():
         if not grupo or not codigo or not descripcion:
             flash('Todos los campos son obligatorios.', 'warning')
             return render_template('configuracion/codigo_form.html', codigo=None, grupos=['COBRO', 'PAGO'])
-        ejecutar_consulta(
-            "INSERT INTO codigo_detalle (grupo, codigo, descripcion) VALUES (%s, %s, %s)",
-            (grupo, codigo, descripcion)
-        )
-        flash('Código creado correctamente.', 'success')
-        return redirect(url_for('configuracion.codigos_lista'))
+        try:
+            ejecutar_consulta(
+                "INSERT INTO codigo_detalle (grupo, codigo, descripcion) VALUES (%s, %s, %s)",
+                (grupo, codigo, descripcion)
+            )
+            flash('Código creado correctamente.', 'success')
+            return redirect(url_for('configuracion.codigos_lista'))
+        except Exception as e:
+            if '1062' in str(e):
+                flash(f'El código "{codigo}" ya existe. Por favor ingrese uno diferente.', 'warning')
+            else:
+                flash(f'Error inesperado al crear el código: {str(e)}', 'danger')
     return render_template('configuracion/codigo_form.html',
                            codigo=None,
                            grupos=['COBRO', 'PAGO'])
@@ -53,12 +59,18 @@ def codigo_editar(id_codigo):
             flash('Todos los campos son obligatorios.', 'warning')
             return render_template('configuracion/codigo_form.html',
                                    codigo=codigo, codigo_obj=codigo, grupos=['COBRO', 'PAGO'])
-        ejecutar_consulta(
-            "UPDATE codigo_detalle SET grupo=%s, codigo=%s, descripcion=%s WHERE id_codigo=%s",
-            (grupo, cod, descripcion, id_codigo)
-        )
-        flash('Código actualizado correctamente.', 'success')
-        return redirect(url_for('configuracion.codigos_lista'))
+        try:
+            ejecutar_consulta(
+                "UPDATE codigo_detalle SET grupo=%s, codigo=%s, descripcion=%s WHERE id_codigo=%s",
+                (grupo, cod, descripcion, id_codigo)
+            )
+            flash('Código actualizado correctamente.', 'success')
+            return redirect(url_for('configuracion.codigos_lista'))
+        except Exception as e:
+            if '1062' in str(e):
+                flash(f'El código "{cod}" ya existe. Por favor ingrese uno diferente.', 'warning')
+            else:
+                flash(f'Error inesperado al actualizar el código: {str(e)}', 'danger')
     return render_template('configuracion/codigo_form.html',
                            codigo=codigo,
                            codigo_obj=codigo,

@@ -13,9 +13,8 @@ def planes_lista():
           COUNT(pe.id_plan) AS num_asignaturas
    FROM programa_academico p
    LEFT JOIN plan_estudio pe ON p.id_programa = pe.id_programa
-   WHERE p.activo = 1
-   GROUP BY p.id_programa, p.codigo, p.nombre
-   ORDER BY p.nombre""",
+   GROUP BY p.id_programa, p.codigo, p.nombre, p.num_sem, p.activo
+   ORDER BY p.activo DESC, p.nombre""",
         fetch=True
     )
     return render_template('configuracion/planes_lista.html', programas=programas or [])
